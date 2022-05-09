@@ -1,2 +1,2 @@
-from . import models
+from . import models, service
 from .models import EbayKleinanzeigen

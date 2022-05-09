@@ -1,8 +1,13 @@
+import os
 from sqlalchemy import create_engine, Column, Integer, String, Float, Numeric, DateTime, Enum as SqlalchemyEnum, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
 from enum import Enum as PythonEnum
+import logging
 
-engine = create_engine('sqlite:///estate.db', echo=True)
+logger = logging.getLogger(__name__)
+
+
+engine = create_engine(os.getenv('DB_CONNECTION_STRING'), echo=True)
 Base = declarative_base()
 
 
@@ -21,8 +26,6 @@ class EstateType(PythonEnum):
 
 
 class Estate:
-    def __int__(self):
-        self.__tablename__ = self.__class__.__name__
 
     id = Column(Integer, primary_key=True)
     source = Column(SqlalchemyEnum)
@@ -34,7 +37,7 @@ class Estate:
     postal_code = Column(Integer)
     url = Column(String)
 
-    created = Column(DateTime(timezone=True), server_default=func.now())
+    db_entry_created = Column(DateTime(timezone=True), server_default=func.now())
 
     # TODO shift to child
     source_id = Column(String)
@@ -46,7 +49,7 @@ class Estate:
     with_agent = Column(Boolean)
 
     def __repr__(self):
-        return f'{self.__class__.__name__} {self.id} {self.source} price={self.price} area={self.area}'
+        return f'{self.__class__.__name__}({self.id} price={self.price} area={self.area})'
 
 
 
