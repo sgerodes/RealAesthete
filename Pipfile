@@ -8,6 +8,8 @@ scrapy = "*"
 sqlalchemy = "*"
 python-dotenv = "*"
 psycopg2-binary = "*"
+scrapy-rotating-proxies = "*"
+fake-useragent = "*"
 
 [dev-packages]
 pytest = "*"

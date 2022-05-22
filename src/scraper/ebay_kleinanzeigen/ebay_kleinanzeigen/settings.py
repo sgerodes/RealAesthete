@@ -1,3 +1,4 @@
+from . import proxies
 # Scrapy settings for ebay_kleinanzeigen project
 #
 # For simplicity, this file contains only settings considered important or
@@ -13,11 +14,16 @@ SPIDER_MODULES = ['ebay_kleinanzeigen.spiders']
 NEWSPIDER_MODULE = 'ebay_kleinanzeigen.spiders'
 
 
+# Rotating proxies
+#ROTATING_PROXY_LIST = proxies.proxies
+# ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scraper\ebay_kleinanzeigen\ebay_kleinanzeigen\free-proxy-list_net.proxies'
+ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scraper\ebay_kleinanzeigen\ebay_kleinanzeigen\good_proxy.txt'
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'ebay_kleinanzeigen (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -52,6 +58,10 @@ ROBOTSTXT_OBEY = True
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
 #    'ebay_kleinanzeigen.middlewares.EbayKleinanzeigenDownloaderMiddleware': 543,
+#}
+#DOWNLOADER_MIDDLEWARES = {
+#    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+#    'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
 #}
 
 # Enable or disable extensions
