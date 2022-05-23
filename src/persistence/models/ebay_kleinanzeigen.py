@@ -11,7 +11,7 @@ class EbayKleinanzeigen(Base, Estate):
         if from_scrapy_item:
             self.copy_scrapy_fields(from_scrapy_item)
 
-    source_id = Column(String)
+    source_id = Column(String, unique=True)
     rooms = Column(Float)
     city = Column(String)
     online_since = Column(DateTime(timezone=True))

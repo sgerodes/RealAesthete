@@ -7,10 +7,12 @@ import re
 import datetime
 from typing import List
 
+
 logger = logging.getLogger(__name__)
 
 
 class EbayKleinanzeigenSpider:
+    BASE_URL = 'https://www.ebay-kleinanzeigen.de'
 
     def start_requests(self):
         ua = UserAgent()
@@ -90,7 +92,9 @@ class EbayKleinanzeigenSpider:
                 item['area'] = self.parse_area(tag)
 
     def parse(self, response, **kwargs):
+        logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
         css_index_selector = '.aditem'
+        next_page_css_selector = '.pagination-next'
 
         for elem in response.css(css_index_selector):
             item = EbayKleinanzeigenItem()
@@ -98,11 +102,23 @@ class EbayKleinanzeigenSpider:
             logger.debug(f'processing item with source_id={item.get("source_id")}')
             item['url'] = elem.xpath("@data-href").get()
             item['price'] = self.parse_price(elem.css('.aditem-main--middle--price::text').get())
-
             self.scalp_tags(item, elem.css('.simpletag::text').getall())
-
             item['postal_code'], item['city'] = self.parse_postal_code_and_city(''.join(elem.css('.aditem-main--top--left::text').getall()))
-
             item['online_since'] = self.parse_online_since(''.join(elem.css('.aditem-main--top--right::text').getall()))
 
+            if hasattr(self, 'estate_type'):
+                item['estate_type'] = self.estate_type
+            if hasattr(self, 'exposition_type'):
+                item['exposition_type'] = self.exposition_type
+
             yield item
+
+        next_page_selector = response.css(next_page_css_selector)
+        if next_page_selector:
+            href = next_page_selector.xpath('@href').get()
+            if href:
+                next_page_url = f'{self.BASE_URL}{href}'
+                logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
+                yield scrapy.Request(next_page_url, callback=self.parse)
+            else:
+                logger.debug(f'Spider  {self.__class__.__name__}: href not found in the next_page_selector')

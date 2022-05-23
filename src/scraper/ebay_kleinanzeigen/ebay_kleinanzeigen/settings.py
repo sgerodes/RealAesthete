@@ -10,8 +10,8 @@ from . import proxies
 
 BOT_NAME = 'ebay_kleinanzeigen'
 
-SPIDER_MODULES = ['ebay_kleinanzeigen.spiders']
-NEWSPIDER_MODULE = 'ebay_kleinanzeigen.spiders'
+SPIDER_MODULES = ['src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders']
+NEWSPIDER_MODULE = 'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders'
 
 
 # Rotating proxies
@@ -28,7 +28,7 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'ebay_kleinanzeigen.pipelines.EbayKleinanzeigenPersistencePipeline': 300,
+    'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.pipelines.EbayKleinanzeigenPersistencePipeline': 300,
 }
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)

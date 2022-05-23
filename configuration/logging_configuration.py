@@ -50,11 +50,19 @@ def configure_logging():
                 'level': project_log_level,
                 'propagate': False
              },
-            #'scrapy': {
-            #    'handlers': ['default'],
-            #    'level': logging.DEBUG,
-            #    'propagate': False
-            #},
+            'scrapy': {
+                'handlers': ['default'],
+                'level': logging.WARNING,
+                'propagate': False
+            },
+            'sqlalchemy.engine.Engine': {
+                'level': logging.WARNING,
+                'propagate': True
+            },
+            'sqlalchemy.engine': {
+                'level': logging.WARNING,
+                'propagate': True
+            },
             'urllib3.connectionpool': {
                 'level': logging.WARNING,
             },
