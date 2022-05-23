@@ -1,4 +1,6 @@
 from . import proxies
+from . import spiders
+from . import pipelines
 # Scrapy settings for ebay_kleinanzeigen project
 #
 # For simplicity, this file contains only settings considered important or
@@ -8,11 +10,23 @@ from . import proxies
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+
+def get_full_package_name_for_class(clazz) -> str:
+    return ".".join([clazz.__module__, clazz.__name__])
+
+
+def get_full_package_name_module(module) -> str:
+    return module.__name__
+
+
 BOT_NAME = 'ebay_kleinanzeigen'
 
-SPIDER_MODULES = ['src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders']
-NEWSPIDER_MODULE = 'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders'
+SPIDER_MODULES = [get_full_package_name_module(spiders)]  # ['src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders']
+NEWSPIDER_MODULE = get_full_package_name_module(spiders)  # 'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders'
 
+ITEM_PIPELINES = {
+    get_full_package_name_for_class(pipelines.EbayKleinanzeigenPersistencePipeline): 300
+}
 
 # Rotating proxies
 #ROTATING_PROXY_LIST = proxies.proxies
@@ -25,11 +39,6 @@ ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scr
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
-# Configure item pipelines
-# See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.pipelines.EbayKleinanzeigenPersistencePipeline': 300,
-}
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
