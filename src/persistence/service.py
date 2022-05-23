@@ -30,6 +30,10 @@ def read_ebay_kleinanzeigen_by_id(id: int) -> EbayKleinanzeigen:
     return session.query(EbayKleinanzeigen).get(id)
 
 
+def read_ebay_kleinanzeigen_by_source_id(source_id: int) -> EbayKleinanzeigen:
+    return session.query(EbayKleinanzeigen).filter(EbayKleinanzeigen.source_id == source_id).one()
+
+
 def read_all_ebay_kleinanzeigen(limit=ALL_DEFAULT_LIMIT) -> List[EbayKleinanzeigen]:
     return session.query(EbayKleinanzeigen).limit(limit).all()
 

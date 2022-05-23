@@ -95,6 +95,7 @@ class EbayKleinanzeigenSpider:
         for elem in response.css(css_index_selector):
             item = EbayKleinanzeigenItem()
             item['source_id'] = elem.xpath("@data-adid").get()
+            logger.debug(f'processing item with source_id={item.get("source_id")}')
             item['url'] = elem.xpath("@data-href").get()
             item['price'] = self.parse_price(elem.css('.aditem-main--middle--price::text').get())
 

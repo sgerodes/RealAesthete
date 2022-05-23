@@ -50,11 +50,11 @@ def configure_logging():
                 'level': project_log_level,
                 'propagate': False
              },
-            'scrapy': {
-                'handlers': ['default'],
-                'level': logging.INFO,
-                'propagate': False
-            },
+            #'scrapy': {
+            #    'handlers': ['default'],
+            #    'level': logging.DEBUG,
+            #    'propagate': False
+            #},
             'urllib3.connectionpool': {
                 'level': logging.WARNING,
             },

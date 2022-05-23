@@ -25,6 +25,12 @@ ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scr
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+# Configure item pipelines
+# See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+ITEM_PIPELINES = {
+    'ebay_kleinanzeigen.pipelines.EbayKleinanzeigenPersistencePipeline': 300,
+}
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
@@ -70,11 +76,6 @@ ROBOTSTXT_OBEY = False
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
-# Configure item pipelines
-# See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'ebay_kleinanzeigen.pipelines.EbayKleinanzeigenPipeline': 300,
-#}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
