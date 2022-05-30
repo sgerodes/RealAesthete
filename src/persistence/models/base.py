@@ -1,9 +1,9 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, Numeric, DateTime, Enum as SqlalchemyEnum, Boolean, func
+from sqlalchemy import create_engine, Column, Integer, String, Float, Numeric, DateTime, Enum as SqlalchemyEnum, func
 from sqlalchemy.ext.declarative import declarative_base
 from enum import Enum as PythonEnum
 import logging
-from ...scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.enums import ExpositionType, EstateType
+from src.scraper.enums import ExpositionType, EstateType
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 import scrapy
 import logging
 from ..items import EbayKleinanzeigenItem
-from ..headers import get_random_header_set
+from src.scraper.headers import get_random_header_set
 from fake_useragent import UserAgent
 
 

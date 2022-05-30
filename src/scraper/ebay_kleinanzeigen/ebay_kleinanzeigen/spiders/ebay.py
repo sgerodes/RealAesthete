@@ -1,7 +1,7 @@
 import scrapy
 import logging
 from .ebay_base import EbayKleinanzeigenSpider
-from ..enums import ExpositionType, EstateType
+from ....enums import ExpositionType, EstateType
 
 
 logger = logging.getLogger(__name__)
