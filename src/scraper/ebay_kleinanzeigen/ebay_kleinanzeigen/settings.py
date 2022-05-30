@@ -15,16 +15,13 @@ def get_full_package_name_for_class(clazz) -> str:
     return ".".join([clazz.__module__, clazz.__name__])
 
 
-def get_full_package_name_module(module) -> str:
-    return module.__name__
-
-
 BOT_NAME = 'ebay_kleinanzeigen'
 
-SPIDER_MODULES = [get_full_package_name_module(spiders)]  # ['src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders']
-NEWSPIDER_MODULE = get_full_package_name_module(spiders)  # 'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders'
+SPIDER_MODULES = [spiders.__name__]  # ['src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders']
+NEWSPIDER_MODULE = spiders.__name__  # 'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders'
 
 ITEM_PIPELINES = {
+
     get_full_package_name_for_class(pipelines.EbayKleinanzeigenPersistencePipeline): 300
 }
 

@@ -2,7 +2,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import or_
 from .models.base import engine, EstateSource, Estate
 from .models.ebay_kleinanzeigen import EbayKleinanzeigen
-from typing import List
+from typing import List, Callable
 import logging
 from sqlalchemy.exc import DatabaseError, IntegrityError
 
@@ -15,7 +15,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-def rollback_decorator(func):
+def rollback_decorator(func: Callable):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)

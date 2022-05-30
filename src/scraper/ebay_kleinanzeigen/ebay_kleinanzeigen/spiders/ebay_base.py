@@ -5,10 +5,21 @@ from ..headers import get_random_header_set
 from fake_useragent import UserAgent
 import re
 import datetime
-from typing import List
+from typing import List, Callable
 
 
 logger = logging.getLogger(__name__)
+
+
+def catch_errors(func: Callable):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logger.warning(f'Error occurred while executing function "{func.__name__}" with {args=}, {kwargs=}')
+            logger.exception(e)
+            return None
+    return wrapper
 
 
 class EbayKleinanzeigenSpider:
@@ -21,7 +32,8 @@ class EbayKleinanzeigenSpider:
         yield scrapy.http.Request(self.start_urls[0], headers=headers)
 
     @staticmethod
-    def parse_price(text):
+    @catch_errors
+    def parse_price(text: str):
         # example: '\n                                        7.500 €'
         if not text or '€' not in text:
             return None
@@ -32,7 +44,8 @@ class EbayKleinanzeigenSpider:
         return None
 
     @staticmethod
-    def parse_area(text):
+    @catch_errors
+    def parse_area(text: str):
         # example: '175 m²'
         if not text or 'm²' not in text:
             return None
@@ -43,7 +56,8 @@ class EbayKleinanzeigenSpider:
         return None
 
     @staticmethod
-    def parse_rooms(text):
+    @catch_errors
+    def parse_rooms(text: str):
         # example: '9 Zimmer'
         if not text or 'Zimmer' not in text:
             return None
@@ -54,7 +68,8 @@ class EbayKleinanzeigenSpider:
         return None
 
     @staticmethod
-    def parse_postal_code_and_city(text):
+    @catch_errors
+    def parse_postal_code_and_city(text: str):
         # example: ' 59602 Rüthen'
         if not text:
             return None, None
@@ -66,7 +81,8 @@ class EbayKleinanzeigenSpider:
         return postal_code, city
 
     @staticmethod
-    def parse_online_since(text):
+    @catch_errors
+    def parse_online_since(text: str):
         # example ' Heute, 21:38'
         text = text.strip()
         if not text:
@@ -84,12 +100,14 @@ class EbayKleinanzeigenSpider:
         else:
             return datetime.date.fromisoformat(text.replace(".", "-"))
 
-    def scalp_tags(self, item, tags: List[str]):
+    @staticmethod
+    @catch_errors
+    def scalp_tags(item, tags: List[str]):
         for tag in tags:
             if 'Zimmer' in tag:
-                item['rooms'] = self.parse_rooms(tag)
+                item['rooms'] = EbayKleinanzeigenSpider.parse_rooms(tag)
             if 'm²' in tag:
-                item['area'] = self.parse_area(tag)
+                item['area'] = EbayKleinanzeigenSpider.parse_area(tag)
 
     def parse(self, response, **kwargs):
         logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
@@ -97,14 +115,16 @@ class EbayKleinanzeigenSpider:
         next_page_css_selector = '.pagination-next'
 
         for elem in response.css(css_index_selector):
+            source_id = elem.xpath("@data-adid").get()
+            logger.debug(f'processing item with {source_id=}')
+
             item = EbayKleinanzeigenItem()
-            item['source_id'] = elem.xpath("@data-adid").get()
-            logger.debug(f'processing item with source_id={item.get("source_id")}')
+            item['source_id'] = source_id
             item['url'] = elem.xpath("@data-href").get()
             item['price'] = self.parse_price(elem.css('.aditem-main--middle--price::text').get())
-            self.scalp_tags(item, elem.css('.simpletag::text').getall())
             item['postal_code'], item['city'] = self.parse_postal_code_and_city(''.join(elem.css('.aditem-main--top--left::text').getall()))
             item['online_since'] = self.parse_online_since(''.join(elem.css('.aditem-main--top--right::text').getall()))
+            self.scalp_tags(item, elem.css('.simpletag::text').getall())
 
             if hasattr(self, 'estate_type'):
                 item['estate_type'] = self.estate_type
