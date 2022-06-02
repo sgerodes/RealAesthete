@@ -16,13 +16,13 @@ class EbayFlatRentSpider(EbayKleinanzeigenSpider, scrapy.Spider):
     exposition_type = ExpositionType.RENT
 
 
-class EbayFlatSellSpider(EbayKleinanzeigenSpider, scrapy.Spider):
-    name = 'EbayFlatSellSpider'
+class EbayFlatBuySpider(EbayKleinanzeigenSpider, scrapy.Spider):
+    name = 'EbayFlatBuySpider'
     start_urls = [
         "https://www.ebay-kleinanzeigen.de/s-wohnung-kaufen/anzeige:angebote/c196"
     ]
     estate_type = EstateType.FLAT
-    exposition_type = ExpositionType.SELL
+    exposition_type = ExpositionType.BUY
 
 
 class EbayHouseRentSpider(EbayKleinanzeigenSpider, scrapy.Spider):
@@ -34,12 +34,12 @@ class EbayHouseRentSpider(EbayKleinanzeigenSpider, scrapy.Spider):
     exposition_type = ExpositionType.RENT
 
 
-class EbayHouseSellSpider(EbayKleinanzeigenSpider, scrapy.Spider):
-    name = 'EbayHouseSellSpider'
+class EbayHouseBuySpider(EbayKleinanzeigenSpider, scrapy.Spider):
+    name = 'EbayHouseBuySpider'
     start_urls = [
         "https://www.ebay-kleinanzeigen.de/s-haus-kaufen/anzeige:angebote/c208"
     ]
     estate_type = EstateType.HOUSE
-    exposition_type = ExpositionType.SELL
+    exposition_type = ExpositionType.BUY
 
 

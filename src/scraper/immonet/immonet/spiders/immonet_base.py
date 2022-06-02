@@ -23,33 +23,38 @@ def catch_errors(func: Callable):
 
 
 class ImmonetSpider:
+    BASE_URL = 'https://www.immonet.de/'
+
     def start_requests(self):
         ua = UserAgent()
         headers = get_random_header_set()
         headers["User-Agent"] = ua.random
         yield scrapy.http.Request(self.start_urls[0], headers=headers)
 
+    @staticmethod
+    @catch_errors
+    def parse_item_id(text):
+        return text.split('_')[1]
+
     def parse(self, response, **kwargs):
         logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
-        css_index_selector = '.padding-12'
-        next_page_css_selector = '.pagination-next'
+        css_index_selector = '.item'
+        next_page_css_selector = '.text-right'
+
 
         for elem in response.css(css_index_selector):
-            source_id = elem.xpath("@data-adid").get()
+            source_id = self.parse_item_id(elem.xpath("@id").get())
             logger.debug(f'processing item with {source_id=}')
 
             item = ImmonetItem()
             item['source_id'] = source_id
-            item['url'] = elem.xpath("@data-href").get()
-            item['price'] = self.parse_price(elem.css('.aditem-main--middle--price::text').get())
-            item['postal_code'], item['city'] = self.parse_postal_code_and_city(''.join(elem.css('.aditem-main--top--left::text').getall()))
-            item['online_since'] = self.parse_online_since(''.join(elem.css('.aditem-main--top--right::text').getall()))
-            self.scalp_tags(item, elem.css('.simpletag::text').getall())
 
             if hasattr(self, 'estate_type'):
                 item['estate_type'] = self.estate_type
             if hasattr(self, 'exposition_type'):
                 item['exposition_type'] = self.exposition_type
+            if hasattr(self, 'foreclosure'):
+                item['foreclosure'] = self.foreclosure
 
             yield item
 

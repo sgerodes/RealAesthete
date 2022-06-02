@@ -1,40 +1,23 @@
-from . import proxies
+# Scrapy settings for immonet project
 from . import spiders
 from . import pipelines
-# Scrapy settings for ebay_kleinanzeigen project
-#
-# For simplicity, this file contains only settings considered important or
-# commonly used. You can find more settings consulting the documentation:
-#
-#     https://docs.scrapy.org/en/latest/topics/settings.html
-#     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 
 def get_full_package_name_for_class(clazz) -> str:
     return ".".join([clazz.__module__, clazz.__name__])
 
 
-BOT_NAME = 'ebay_kleinanzeigen'
+BOT_NAME = 'immonet'
 
-SPIDER_MODULES = [spiders.__name__]  # ['src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders']
-NEWSPIDER_MODULE = spiders.__name__  # 'src.scraper.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders'
+SPIDER_MODULES = [spiders.__name__]
+NEWSPIDER_MODULE = spiders.__name__
 
-ITEM_PIPELINES = {
-    get_full_package_name_for_class(pipelines.EbayKleinanzeigenPersistencePipeline): 300
-}
-
-# Rotating proxies
-#ROTATING_PROXY_LIST = proxies.proxies
-# ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scraper\ebay_kleinanzeigen\ebay_kleinanzeigen\free-proxy-list_net.proxies'
-ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scraper\ebay_kleinanzeigen\ebay_kleinanzeigen\good_proxy.txt'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'ebay_kleinanzeigen (+http://www.yourdomain.com)'
+#USER_AGENT = 'immonet (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
-
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -62,17 +45,13 @@ ROBOTSTXT_OBEY = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'ebay_kleinanzeigen.middlewares.EbayKleinanzeigenSpiderMiddleware': 543,
+#    'immonet.middlewares.ImmonetSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'ebay_kleinanzeigen.middlewares.EbayKleinanzeigenDownloaderMiddleware': 543,
-#}
-#DOWNLOADER_MIDDLEWARES = {
-#    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
-#    'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+#    'immonet.middlewares.ImmonetDownloaderMiddleware': 543,
 #}
 
 # Enable or disable extensions
@@ -81,6 +60,11 @@ ROBOTSTXT_OBEY = False
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
+# Configure item pipelines
+# See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+#ITEM_PIPELINES = {
+#    'immonet.pipelines.ImmonetPipeline': 300,
+#}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
