@@ -51,7 +51,10 @@ class Repository(Generic[M]):
     # CREATE
     @classmethod
     @rollback_on_error
-    def create(cls, entity: M) -> M:
+    def create(cls, entity: M) -> Optional[M]:
+        if not entity:
+            logger.error(f'Trying to create empty object')
+            return None
         if entity.id:
             logger.error(f'The instance you passing in has already an id. try updating instead. '
                          f'Probably tried to create already existing entity: {entity}')
@@ -63,7 +66,7 @@ class Repository(Generic[M]):
 
     @classmethod
     @rollback_on_error
-    def create_all(cls, entities_list: List[M]) -> List[M]:
+    def create_all(cls, entities_list: List[M]) -> Optional[List[M]]:
         for e in entities_list:
             cls.create(e)
         logger.debug(f'Created {len(entities_list)} entities')
@@ -113,7 +116,7 @@ class Repository(Generic[M]):
         return cls._get_filtered_query(**kwargs).order_by(cls._get_model_type().id.desc()).first()
 
     @classmethod
-    def read_all(cls, limit: int = None, **kwargs) -> List[M]:
+    def read_all(cls, limit: int = None, **kwargs) -> Optional[List[M]]:
         logger.debug(f'Reading all "{cls._get_model_type_name()}" with {limit=} filters {kwargs}')
         filtered_query = cls._get_filtered_query(**kwargs)
         if limit:

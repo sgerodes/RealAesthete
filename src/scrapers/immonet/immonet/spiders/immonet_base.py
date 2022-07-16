@@ -33,6 +33,41 @@ class ImmonetSpider:
 
     @staticmethod
     @catch_errors
+    def parse_price(text: str):
+        # example: '1.040 '
+        search = re.compile(r'[\d\.]+').search(text)
+        if search:
+            found = search.group(0)
+            return found.replace('.', '').replace(',', '.').replace('€', '')
+        return None
+
+    @staticmethod
+    @catch_errors
+    def parse_city(text: str):
+        pass
+
+    @staticmethod
+    @catch_errors
+    def parse_rooms(text: str):
+        # example: ' 3.5 '
+        search = re.compile(r'[\d\.]+').search(text)
+        if search:
+            found = search.group(0)
+            return found
+        return None
+
+    @staticmethod
+    @catch_errors
+    def parse_area(text: str):
+        # example: ' 105 '
+        search = re.compile(r'[\d\.]+').search(text)
+        if search:
+            found = search.group(0)
+            return found
+        return None
+
+    @staticmethod
+    @catch_errors
     def parse_item_id(text):
         return text.split('_')[1]
 
@@ -41,13 +76,16 @@ class ImmonetSpider:
         css_index_selector = '.item'
         next_page_css_selector = '.text-right'
 
-
         for elem in response.css(css_index_selector):
             source_id = self.parse_item_id(elem.xpath("@id").get())
             logger.debug(f'parsing item with {source_id=}')
 
             item = ImmonetItem()
             item['source_id'] = source_id
+            item['price'] = self.parse_price(elem.css("div[id*='selPrice_']").css('.text-nowrap::text').get())
+            #item['city'] = self.parse_city()
+            item['rooms'] = self.parse_rooms(elem.css("div[id*='selRooms_']").css('.text-nowrap::text').get())
+            item['area'] = self.parse_area(elem.css("div[id*='selArea_']").css('.text-nowrap::text').get())
 
             if hasattr(self, 'estate_type'):
                 item['estate_type'] = self.estate_type

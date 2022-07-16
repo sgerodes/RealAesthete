@@ -8,7 +8,7 @@ from fake_useragent import UserAgent
 logger = logging.getLogger(__name__)
 
 
-class ProxySpider():
+class ProxySpider:
     start_urls = [
         "https://www.ebay-kleinanzeigen.de/s-immobilien/c195",
         # "https://httpbin.org/headers"

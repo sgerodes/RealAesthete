@@ -45,13 +45,15 @@ class Immonet(Base):
     price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
     area = sqlalchemy.Column(sqlalchemy.Float)
     postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True)
-    url = sqlalchemy.Column(sqlalchemy.String)
 
     source_id = sqlalchemy.Column(sqlalchemy.String, unique=True)
     rooms = sqlalchemy.Column(sqlalchemy.Float)
     city = sqlalchemy.Column(sqlalchemy.String)
 
     foreclosure = sqlalchemy.Column(sqlalchemy.Boolean)
+
+    def get_full_url(self):
+        return 'https://www.immonet.de/angebot/' + self.source_id
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id} price={self.price} area={self.area})'
