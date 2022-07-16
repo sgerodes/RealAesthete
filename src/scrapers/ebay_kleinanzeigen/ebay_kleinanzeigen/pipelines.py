@@ -1,6 +1,6 @@
-from .... import persistence
-from ....persistence.models.ebay_kleinanzeigen import EbayKleinanzeigen
+from src import persistence
 import logging
+from src.parsers.scrapy2db_parsers import EbayKleinanzeigenParser
 
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
 
 
 class EbayKleinanzeigenPersistencePipeline:
@@ -24,13 +23,13 @@ class EbayKleinanzeigenPersistencePipeline:
 
     def process_item(self, item, spider):
         logger.debug(f'processing item with source_id={item.get("source_id")}')
-        db_item = EbayKleinanzeigen(from_scrapy_item=item)
-        db_entry = persistence.service.read_ebay_kleinanzeigen_by_source_id(item.get('source_id'))
-        if db_entry:
+        db_model = persistence.EbayKleinanzeigenRepository.read_by_source_id(item.get('source_id'))
+        if db_model:
             logger.debug(f'duplicate found. Duplicates {self.duplicates}')
             self.duplicates += 1
         else:
-            persistence.service.save_estate_entity(db_item)
+            new_db_model = EbayKleinanzeigenParser.create_from_scrapy_item(item)
+            persistence.EbayKleinanzeigenRepository.create(new_db_model)
         if self.duplicates > self.DUPLICATES_THRESHOLD:
             logger.debug(f'Duplicate count hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider')
             self.duplicates = 0

@@ -1,4 +1,10 @@
-from . import models, service
-from .models import EbayKleinanzeigen
-from .models.base import engine
+import sqlalchemy
+import os
+from . import models
+from .repositories import *
 
+
+engine = sqlalchemy.create_engine(os.getenv('DB_CONNECTION_STRING'), echo=True)
+session = sqlalchemy.orm.sessionmaker(bind=engine)()
+
+models.Base.metadata.create_all(engine)
