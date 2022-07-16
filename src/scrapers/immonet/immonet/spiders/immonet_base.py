@@ -44,7 +44,7 @@ class ImmonetSpider:
 
         for elem in response.css(css_index_selector):
             source_id = self.parse_item_id(elem.xpath("@id").get())
-            logger.debug(f'processing item with {source_id=}')
+            logger.debug(f'parsing item with {source_id=}')
 
             item = ImmonetItem()
             item['source_id'] = source_id

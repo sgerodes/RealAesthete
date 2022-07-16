@@ -18,6 +18,10 @@ class Repository(Generic[M]):
         return persistence.session
 
     @classmethod
+    def _get_query(cls):
+        return cls._get_session().query(cls._get_model_type())
+
+    @classmethod
     def _get_model_type(cls):
         return get_args(cls.__orig_bases__[0])[0]  # noqa
 
@@ -42,7 +46,7 @@ class Repository(Generic[M]):
             if k not in dir(cls._get_model_type()):
                 logger.error(f'Tried to query "{cls._get_model_type_name()}" by "{k}",'
                              f' but it is not a member of the class')
-        return cls._get_model_type().query.filter_by(**kwargs)
+        return cls._get_query().filter_by(**kwargs)
 
     # CREATE
     @classmethod

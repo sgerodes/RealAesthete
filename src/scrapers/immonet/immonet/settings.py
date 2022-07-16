@@ -12,6 +12,9 @@ BOT_NAME = 'immonet'
 SPIDER_MODULES = [spiders.__name__]
 NEWSPIDER_MODULE = spiders.__name__
 
+ITEM_PIPELINES = {
+    get_full_package_name_for_class(pipelines.ImmonetPipeline): 300
+}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'immonet (+http://www.yourdomain.com)'

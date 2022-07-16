@@ -1,17 +1,9 @@
-from src import persistence
 import logging
+from src import persistence
 from src.parsers.scrapy2db_parsers import EbayKleinanzeigenParser
 
 
 logger = logging.getLogger(__name__)
-
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
 
 
 class EbayKleinanzeigenPersistencePipeline:
