@@ -1,5 +1,6 @@
 import sqlalchemy
 import logging
+import datetime
 from src.persistence import enums
 from .. import scrapers
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,15 +18,17 @@ class EbayKleinanzeigen(Base):
 
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True)
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
-    area = sqlalchemy.Column(sqlalchemy.Float)
+    price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), index=True)
+    area = sqlalchemy.Column(sqlalchemy.Float, index=True)
     postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True)
     url = sqlalchemy.Column(sqlalchemy.String)
 
-    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True)
-    rooms = sqlalchemy.Column(sqlalchemy.Float)
+    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, index=True)
+    rooms = sqlalchemy.Column(sqlalchemy.Float, index=True)
     city = sqlalchemy.Column(sqlalchemy.String)
-    online_since = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True))
+    online_since = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
+
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
 
     def get_full_url(self):
         return 'https://www.ebay-kleinanzeigen.de/' + self.url
@@ -40,17 +43,18 @@ class Immonet(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.Immonet)
 
-    exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True)
-    estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
-    area = sqlalchemy.Column(sqlalchemy.Float)
-    postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True)
+    exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
+    estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
+    price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), nullable=True, index=True)
+    area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True, nullable=True)
 
-    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True)
-    rooms = sqlalchemy.Column(sqlalchemy.Float)
-    city = sqlalchemy.Column(sqlalchemy.String)
-
+    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
+    rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    city = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     foreclosure = sqlalchemy.Column(sqlalchemy.Boolean)
+
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
 
     def get_full_url(self):
         return 'https://www.immonet.de/angebot/' + self.source_id

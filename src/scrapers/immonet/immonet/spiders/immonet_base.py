@@ -44,7 +44,10 @@ class ImmonetSpider:
     @staticmethod
     @catch_errors
     def parse_city(text: str):
-        pass
+        # example: 'Etagenwohnung • Coswig '
+        if text:
+            return text.split('•')[1].strip().replace('\n', '').replace('\r', '')
+        return None
 
     @staticmethod
     @catch_errors
@@ -59,7 +62,7 @@ class ImmonetSpider:
     @staticmethod
     @catch_errors
     def parse_area(text: str):
-        # example: ' 105 '
+        # example: ' 44 '
         search = re.compile(r'[\d\.]+').search(text)
         if search:
             found = search.group(0)
@@ -83,7 +86,7 @@ class ImmonetSpider:
             item = ImmonetItem()
             item['source_id'] = source_id
             item['price'] = self.parse_price(elem.css("div[id*='selPrice_']").css('.text-nowrap::text').get())
-            #item['city'] = self.parse_city()
+            item['city'] = self.parse_city(elem.css(".text-100::text").get())
             item['rooms'] = self.parse_rooms(elem.css("div[id*='selRooms_']").css('.text-nowrap::text').get())
             item['area'] = self.parse_area(elem.css("div[id*='selArea_']").css('.text-nowrap::text').get())
 

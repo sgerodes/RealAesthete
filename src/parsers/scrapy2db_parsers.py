@@ -39,7 +39,3 @@ class ImmonetParser:
         db_model.foreclosure = scrapy_item.get('foreclosure')
 
         return db_model
-
-
-
-
