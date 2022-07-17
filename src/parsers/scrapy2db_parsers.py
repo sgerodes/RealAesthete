@@ -1,5 +1,7 @@
 from ..persistence import models
 
+print('Ohm nom nom')
+
 
 class EbayKleinanzeigenParser:
     @staticmethod
