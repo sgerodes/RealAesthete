@@ -86,3 +86,15 @@ class Immowelt(Base):
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id} price={self.price} area={self.area})'
+
+
+def ImmoweltZipCode(Base):
+    __tablename__ = 'ImmoweltZipCode'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True, nullable=False, unique=False)
+    exists = sqlalchemy.Column(sqlalchemy.Boolean, index=True, nullable=False, default=True)
+
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
+
+    
