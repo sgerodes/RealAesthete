@@ -15,6 +15,8 @@ class Repository(Generic[M]):
 
     @classmethod
     def _get_session(cls):
+        # TODO probably replace with Session(bind=engine, expire_on_commit=False) or with a sessionmaker()
+        # https://stackoverflow.com/questions/12223335/sqlalchemy-creating-vs-reusing-a-session
         return persistence.session
 
     @classmethod
@@ -79,7 +81,7 @@ class Repository(Generic[M]):
         if isinstance(primary_keys, list) or isinstance(primary_keys, set) or isinstance(primary_keys, tuple):
             if len(primary_keys) != len(model_pks):
                 logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-                             f'got {primary_keys}, model primary key names are {model_pks}')
+                             f'got {len(primary_keys)} {primary_keys}, should be {len(model_pks)}. Model primary key names are {model_pks}')
                 return None
         else:
             if len(model_pks) != 1:
@@ -87,7 +89,7 @@ class Repository(Generic[M]):
                              f'got {primary_keys=}, model primary key names are {model_pks}')
                 return None
         logger.debug(f'Reading {cls._get_model_type_name()} with primary keys: {primary_keys}')
-        return cls._get_model_type().query.get(primary_keys)
+        return cls._get_query().get(primary_keys)
 
     @classmethod
     def read_by_unique(cls, **kwargs) -> Optional[M]:

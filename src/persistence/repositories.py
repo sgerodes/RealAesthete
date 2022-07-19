@@ -1,7 +1,7 @@
 import logging
 from .generic import Repository
 from typing import Optional
-from .models import EbayKleinanzeigen, Immonet, ImmoweltPostalCode
+from .models import EbayKleinanzeigen, Immonet, ImmoweltPostalCode, Immowelt
 
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,13 @@ class ImmonetRepository(Repository[Immonet]):
     @classmethod
     def read_by_source_id(cls, source_id: int) -> Optional[Immonet]:
         logger.debug(f'reading Immonet by {source_id=}')
+        return cls.read_by_unique(source_id=source_id)
+
+
+class ImmoweltRepository(Repository[Immowelt]):
+    @classmethod
+    def read_by_source_id(cls, source_id: int) -> Optional[Immowelt]:
+        logger.debug(f'reading Immowelt by {source_id=}')
         return cls.read_by_unique(source_id=source_id)
 
 

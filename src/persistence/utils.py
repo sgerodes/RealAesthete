@@ -30,6 +30,10 @@ def rollback_on_error(func: Callable) -> Callable:
             logger.exception(e)
             persistence.session.rollback()
             logger.warning('session rollbacked')
+        except sqlalchemy.exc.InvalidRequestError as e:
+            logger.exception(e)
+            persistence.session.rollback()
+            logger.warning('session rollbacked')
             return None
     return wrapper
 
@@ -47,4 +51,12 @@ def non_updatable(clazz: VAR_REPOSITORY) -> VAR_REPOSITORY:
     def update(cls, *args, **kwargs):
         logger.warning(f'It is not allowed to update a "{cls._get_model_type_name()}"')
     setattr(clazz, 'update', update)
+    return clazz
+
+
+def non_creatable(clazz: VAR_REPOSITORY) -> VAR_REPOSITORY:
+    @classmethod # noqa
+    def create(cls, *args, **kwargs):
+        logger.warning(f'It is not allowed to create a "{cls._get_model_type_name()}"')
+    setattr(clazz, 'create', create)
     return clazz
