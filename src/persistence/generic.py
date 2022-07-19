@@ -53,12 +53,12 @@ class Repository(Generic[M]):
     @rollback_on_error
     def create(cls, entity: M) -> Optional[M]:
         if not entity:
-            logger.error(f'Trying to create empty object')
+            logger.error(f'Tried to create empty object')
             return None
         if entity.id:
-            logger.error(f'The instance you passing in has already an id. try updating instead. '
+            logger.error(f'The instance you passing in has already an id. Aborting'
                          f'Probably tried to create already existing entity: {entity}')
-            return entity
+            return None
         cls._get_session().add(entity)
         cls._get_session().commit()
         logger.debug(f'Created {cls._get_model_type_name()} {entity}')
@@ -74,14 +74,13 @@ class Repository(Generic[M]):
 
     # READ
     @classmethod
-    def read_by_primary_keys(cls, primary_keys: Union[List[Any], Set[Any], Any]) -> Optional[M]:
+    def read_by_primary_keys(cls, primary_keys: Union[List, Set, Tuple, Any]) -> Optional[M]:
         model_pks = cls._get_models_primary_keys(cls._get_model_type())
         if isinstance(primary_keys, list) or isinstance(primary_keys, set) or isinstance(primary_keys, tuple):
-            for pk in primary_keys:
-                if len(primary_keys) != len(model_pks):
-                    logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-                                 f'got {primary_keys}, model primary key names are {model_pks}')
-                    return None
+            if len(primary_keys) != len(model_pks):
+                logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
+                             f'got {primary_keys}, model primary key names are {model_pks}')
+                return None
         else:
             if len(model_pks) != 1:
                 logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
@@ -122,6 +121,11 @@ class Repository(Generic[M]):
         if limit:
             filtered_query = filtered_query.limit(limit)
         return filtered_query.all()
+
+    @classmethod
+    def exists(cls, **kwargs) -> bool:
+        logger.debug(f'Checking existence of {cls._get_model_type_name()} with filters {kwargs}')
+        return cls._get_filtered_query(**kwargs).first() is not None
 
     # UPDATE
     @classmethod
