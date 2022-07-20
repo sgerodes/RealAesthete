@@ -1,7 +1,7 @@
 import logging
 from .generic import Repository
 from typing import Optional
-from .models import EbayKleinanzeigen, Immonet, ImmoweltPostalCode, Immowelt
+from .models import EbayKleinanzeigen, Immonet, ImmoweltPostalCode, Immowelt, ImmoweltPostalCodeRequestLog
 
 
 logger = logging.getLogger(__name__)
@@ -44,3 +44,6 @@ class ImmoweltPostalCodeRepository(Repository[ImmoweltPostalCode]):
             return None
         super().create(immowelt_postal_code)
 
+
+class ImmoweltPostalCodeRequestLogRepository(Repository[ImmoweltPostalCodeRequestLog]):
+    pass

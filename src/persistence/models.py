@@ -91,7 +91,7 @@ class Immowelt(Base):
 
 
 class ImmoweltPostalCode(Base):
-    __tablename__ = 'ImmoweltZipCode'
+    __tablename__ = 'ImmoweltPostalCode'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=False, unique=True)

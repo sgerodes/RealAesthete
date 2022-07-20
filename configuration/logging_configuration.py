@@ -52,7 +52,7 @@ def configure_logging():
              },
             'scrapy': {
                 'handlers': ['default'],
-                'level': logging.WARNING,
+                'level': logging.DEBUG,
                 'propagate': False
             },
             'sqlalchemy.engine.Engine': {

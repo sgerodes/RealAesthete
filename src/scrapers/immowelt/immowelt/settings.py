@@ -1,3 +1,9 @@
+from . import spiders
+from . import pipelines
+
+def get_full_package_name_for_class(clazz) -> str:
+    return ".".join([clazz.__module__, clazz.__name__])
+
 # Scrapy settings for immowelt project
 #
 # For simplicity, this file contains only settings considered important or
@@ -9,15 +15,20 @@
 
 BOT_NAME = 'immowelt'
 
-SPIDER_MODULES = ['immowelt.spiders']
-NEWSPIDER_MODULE = 'immowelt.spiders'
+SPIDER_MODULES = [spiders.__name__]
+NEWSPIDER_MODULE = spiders.__name__
 
+#HTTPERROR_ALLOWED_CODES = [404]
+
+ITEM_PIPELINES = {
+    get_full_package_name_for_class(pipelines.ImmoweltPipeline): 300
+}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'immowelt (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32

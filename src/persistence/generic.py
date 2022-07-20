@@ -104,6 +104,7 @@ class Repository(Generic[M]):
         if not field.unique:
             logger.warning(f'You tried to perform a unique query on a non-unique field "{field_name}" of "{cls._get_model_type_name()}"')
             return None
+        logger.debug(f'Reading {cls._get_model_type_name()} by unique: {kwargs}')
         return cls._get_filtered_query(**kwargs).first()
 
     @classmethod
@@ -117,12 +118,18 @@ class Repository(Generic[M]):
         return cls._get_filtered_query(**kwargs).order_by(cls._get_model_type().id.desc()).first()
 
     @classmethod
-    def read_all(cls, limit: int = None, **kwargs) -> Optional[List[M]]:
-        logger.debug(f'Reading all "{cls._get_model_type_name()}" with {limit=} filters {kwargs}')
+    def read_all(cls, limit: int = None, offset: int = None, **kwargs) -> Optional[List[M]]:
+        logger.debug(f'Reading all "{cls._get_model_type_name()}" with {limit=} {offset=} filters {kwargs}')
         filtered_query = cls._get_filtered_query(**kwargs)
         if limit:
             filtered_query = filtered_query.limit(limit)
+        if offset:
+            filtered_query = filtered_query.offset(offset)
         return filtered_query.all()
+
+    @classmethod
+    def read_all_pageable(cls, page=0, page_size=None, **kwargs) -> Optional[List[M]]:
+        return cls.read_all(limit=page_size, offset=page*page_size, **kwargs)
 
     @classmethod
     def exists(cls, **kwargs) -> bool:
