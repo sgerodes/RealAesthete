@@ -10,6 +10,7 @@ python-dotenv = "*"
 psycopg2-binary = "*"
 scrapy-rotating-proxies = "*"
 fake-useragent = "*"
+scrapy-dot-items = "*"
 
 [dev-packages]
 pytest = "*"

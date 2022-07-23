@@ -128,7 +128,7 @@ class Repository(Generic[M]):
         return filtered_query.all()
 
     @classmethod
-    def read_all_pageable(cls, page=0, page_size=None, **kwargs) -> Optional[List[M]]:
+    def read_all_paged(cls, page=0, page_size=None, **kwargs) -> Optional[List[M]]:
         return cls.read_all(limit=page_size, offset=page*page_size, **kwargs)
 
     @classmethod

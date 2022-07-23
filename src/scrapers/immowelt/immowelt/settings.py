@@ -18,7 +18,7 @@ BOT_NAME = 'immowelt'
 SPIDER_MODULES = [spiders.__name__]
 NEWSPIDER_MODULE = spiders.__name__
 
-#HTTPERROR_ALLOWED_CODES = [404]
+HTTPERROR_ALLOWED_CODES = [404]
 
 ITEM_PIPELINES = {
     get_full_package_name_for_class(pipelines.ImmoweltPipeline): 300
