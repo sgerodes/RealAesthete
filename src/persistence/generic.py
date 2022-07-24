@@ -5,6 +5,9 @@ from typing import List, Set, Tuple, TypeVar, Generic, get_args, Optional, Union
 from .utils import rollback_on_error
 from src import persistence
 from functools import lru_cache
+from .errors import RepositoryError
+from sqlalchemy.orm import sessionmaker
+
 
 M = TypeVar("M")
 
@@ -18,17 +21,20 @@ class Repository(Generic[M]):
     def _get_session(cls):
         # TODO probably replace with Session(bind=engine, expire_on_commit=False) or with a sessionmaker()
         # https://stackoverflow.com/questions/12223335/sqlalchemy-creating-vs-reusing-a-session
-        return persistence.session
+        # return persistence.session
+        return sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True)
 
     @classmethod
     def _get_query(cls):
         return cls._get_session().query(cls._get_model_type())
 
     @classmethod
+    @lru_cache(maxsize=1)
     def _get_model_type(cls):
         return get_args(cls.__orig_bases__[0])[0]  # noqa
 
     @classmethod
+    @lru_cache(maxsize=1)
     def _get_model_type_name(cls):
         return cls._get_model_type().__name__
 
@@ -53,13 +59,21 @@ class Repository(Generic[M]):
 
     @classmethod
     @lru_cache(maxsize=1)
-    def _get_unique_constraints(cls) -> FrozenSet[FrozenSet[str]]:
+    def _get_unique_constraints(cls) -> Set[FrozenSet[str]]:
         tablename: str = cls._get_model_type().__tablename__
+        # Get multicolumn unique constraints
         sqlalchemy_unique_constraints: List[dict] = sqlalchemy.inspect(persistence.engine).get_unique_constraints(tablename)
+
+        # Get Primary keys
         pks = list(cls._get_models_primary_keys(cls._get_model_type()))
-        unique_with_pks = [c.get('column_names') for c in sqlalchemy_unique_constraints]
+        unique_with_pks: List[list] = [c.get('column_names') for c in sqlalchemy_unique_constraints]
         unique_with_pks.append(pks)
-        return frozenset(frozenset(c) for c in unique_with_pks)
+
+        # Get field declared unique constraints
+        for col in sqlalchemy.inspect(cls._get_model_type()).c:
+            if col.unique:
+                unique_with_pks.append([col.name])
+        return set(frozenset(c) for c in unique_with_pks)
 
     # CREATE
     @classmethod
@@ -91,14 +105,19 @@ class Repository(Generic[M]):
         model_pks = cls._get_models_primary_keys(cls._get_model_type())
         if isinstance(primary_keys, list) or isinstance(primary_keys, set) or isinstance(primary_keys, tuple):
             if len(primary_keys) != len(model_pks):
-                logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-                             f'got {len(primary_keys)} {primary_keys}, should be {len(model_pks)}. Model primary key names are {model_pks}')
-                return None
+                # logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
+                #              f'got {len(primary_keys)} {primary_keys}, should be {len(model_pks)}. Model primary key names are {model_pks}')
+                # return None
+                raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
+                                      f'got {len(primary_keys)} {primary_keys}, should be {len(model_pks)}. '
+                                      f'Model primary key names are {model_pks}')
         else:
             if len(model_pks) != 1:
-                logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
+                # logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
+                #              f'got {primary_keys=}, model primary key names are {model_pks}')
+                #return None
+                raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
                              f'got {primary_keys=}, model primary key names are {model_pks}')
-                return None
         logger.debug(f'Reading {cls._get_model_type_name()} with primary keys: {primary_keys}')
         return cls._get_query().get(primary_keys)
 
@@ -106,9 +125,11 @@ class Repository(Generic[M]):
     def read_by_unique(cls, **kwargs) -> Optional[M]:
         column_names = set(kwargs.keys())
         if column_names not in cls._get_unique_constraints():
-            logger.warning(f'The column combination {column_names} is not a unique constraint in "{cls._get_model_type_name()}". '
+            # logger.warning(f'The column combination {column_names} is not a unique constraint in "{cls._get_model_type_name()}". '
+            #                f'Existing constraints are {cls._get_unique_constraints()}')
+            # return None
+            raise RepositoryError(f'The column combination {column_names} is not a unique constraint in "{cls._get_model_type_name()}". '
                            f'Existing constraints are {cls._get_unique_constraints()}')
-            return None
         logger.debug(f'Reading {cls._get_model_type_name()} by unique: {kwargs}')
         return cls._get_filtered_query(**kwargs).first()
 
