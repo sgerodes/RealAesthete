@@ -21,8 +21,8 @@ class Repository(Generic[M]):
     def _get_session(cls):
         # TODO probably replace with Session(bind=engine, expire_on_commit=False) or with a sessionmaker()
         # https://stackoverflow.com/questions/12223335/sqlalchemy-creating-vs-reusing-a-session
-        # return persistence.session
-        return sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True)
+        return persistence.session
+        # return sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True)
 
     @classmethod
     def _get_query(cls):
@@ -159,6 +159,10 @@ class Repository(Generic[M]):
         logger.debug(f'Checking existence of {cls._get_model_type_name()} with filters {kwargs}')
         return cls._get_filtered_query(**kwargs).first() is not None
 
+    # @classmethod
+    # def distinct(cls, **kwargs) -> Optional[List[Any]]:
+    #     pass # TODO
+
     # UPDATE
     @classmethod
     @rollback_on_error
@@ -196,3 +200,4 @@ class Repository(Generic[M]):
             cls.delete(e)
         logger.debug(f'Deleted {len(entities_list)} entities')
         return entities_list
+

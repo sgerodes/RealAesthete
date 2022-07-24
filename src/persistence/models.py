@@ -116,9 +116,10 @@ class ImmoweltPostalCodeStatistics(Base):
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=False)
 
     total_entries = sqlalchemy.Column(sqlalchemy.Integer, nullable=True, default=0)
-    last_search = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
+    last_search = sqlalchemy.Column(sqlalchemy.DateTime)
 
-    updated_at = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
+    updated_at = sqlalchemy.Column(sqlalchemy.DateTime)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id} postal_code={self.postal_code} ' \

@@ -9,5 +9,3 @@ engine = sqlalchemy.create_engine(os.getenv('DB_CONNECTION_STRING'), echo=False)
 session = sqlalchemy.orm.sessionmaker(bind=engine)()
 
 models.Base.metadata.create_all(engine)
-
-utils.init_immowelt_postal_code_statistics_repository()

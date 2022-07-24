@@ -7,6 +7,10 @@ from src import persistence
 import re
 import datetime
 from typing import List, Callable
+import datetime
+import random
+from ..items import ImmoweltItem
+from scrapy.exceptions import CloseSpider
 
 
 logger = logging.getLogger(__name__)
@@ -26,22 +30,109 @@ def catch_errors(func: Callable):
 
 class ImmoweltSpider:
     BASE_URL = 'https://www.immowelt.de/'
+    ABSOLUTE_TIMEDELTA_THRESHOLD = datetime.timedelta(days=7)
+    RANDOM_DECLINE_RATE = 0.01
+    ONE_DAY_TIMEDELTA = datetime.timedelta(days=1)
 
-    def get_all_postal_code(self) -> List[str]:
-        plz_10000_to_99999 = [str(plz) for plz in range(10 ** 4, 10 ** 5)]
-        plz_to_10000 = [('00000' + str(plz))[-5:] for plz in range(10 ** 4)]
-        return plz_to_10000 + plz_10000_to_99999
+    @staticmethod
+    @catch_errors
+    def parse_source_id(item_css_selector):
+        return item_css_selector.css('a::attr(id)').get()
+
+    @staticmethod
+    @catch_errors
+    def parse_price(item_css_selector) -> float:
+        text: str = item_css_selector.css('[data-test="price"]::text').get()
+        return float(text.replace('€', '').replace('.', '').replace(',', '.').strip())
+
+    @staticmethod
+    @catch_errors
+    def parse_area(item_css_selector) -> float:
+        text: str = item_css_selector.css('[data-test="area"]::text').get()
+        return float(text.replace('m²', '').strip())
+
+    @staticmethod
+    @catch_errors
+    def parse_rooms(item_css_selector) -> float:
+        text: str = item_css_selector.css('[data-test="rooms"]::text').get()
+        return float(text.replace('Zi.', '').strip())
+
+    @staticmethod
+    @catch_errors
+    def parse_city(item_css_selector) -> str:
+        text: str = item_css_selector.css("[class^='IconFact']").css('span::text').get()
+        return text
 
     def start_requests(self):
         ua = UserAgent()
         headers = get_random_header_set()
         headers["User-Agent"] = ua.random
-        for iw_postal_code in persistence.ImmoweltPostalCodeRepository.read_all(exists=True):
-            url = self.start_urls[0].format(postal_code=iw_postal_code.postal_code)
-            yield scrapy.http.Request(url, headers=headers, cb_kwargs={'postal_code': iw_postal_code.postal_code})
+        # all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
+        #                                                                   exposition_type=self.exposition_type)
+        all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
+                                                                          exposition_type=self.exposition_type,
+                                                                          postal_code='10249')
+        for ipcs in all:
+            should_search = False
+            delta_since_last_search = datetime.datetime.utcnow() - ipcs.last_search if ipcs.last_search else None
+            if not delta_since_last_search or delta_since_last_search > self.ABSOLUTE_TIMEDELTA_THRESHOLD:
+                if random.random() > self.RANDOM_DECLINE_RATE:
+                    logger.debug('Will crawl, too much time passed since last search')
+                    should_search = True
+                else:
+                    logger.debug('Will not crawl, because of the rando rule')
+                    continue
 
-    def parse(self, response, postal_code):
+            delta_since_created = datetime.datetime.utcnow() - ipcs.created_at
+            frequency: datetime.timedelta = delta_since_created / ipcs.total_entries if ipcs.total_entries != 0 else datetime.timedelta(weeks=10000)
+            if not should_search and frequency < self.ONE_DAY_TIMEDELTA:
+                logger.debug('Will crawl, because of frequency very high')
+                should_search = True
+
+            if not should_search and delta_since_last_search > frequency:
+                logger.debug('Will crawl, because of frequency')
+                should_search = True
+
+            if should_search:
+                url = self.start_urls[0].format(postal_code=ipcs.postal_code, page=1)
+                yield scrapy.http.Request(url, headers=headers, cb_kwargs={'postal_code': ipcs.postal_code, 'page': 1})
+
+    def parse(self, response, postal_code: str, page: int):
         logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
+        ipcs = persistence.ImmoweltPostalCodeStatisticsRepository.read_by_unique(estate_type=self.estate_type,
+                                                                                 exposition_type=self.exposition_type,
+                                                                                 postal_code=postal_code)
+        ipcs.last_search = datetime.datetime.utcnow()
+        persistence.ImmoweltPostalCodeStatisticsRepository.update(ipcs)
+
+        css_index_selector = "[class^='EstateItem']"
 
         if response.status == 404:
             logger.warning(f'Request for {postal_code=} is 404. {response.request.url=}')
+
+        elements_selector = response.css(css_index_selector)
+        with open('current.html', 'w+') as f:
+            f.write(response.body)
+
+        for elem in elements_selector:
+            item = ImmoweltItem()
+            item.source_id = self.parse_source_id(elem)
+            item.price = self.parse_price(elem)
+            item.area = self.parse_area(elem)
+            item.rooms = self.parse_rooms(elem)
+            item.postal_code = postal_code
+            item.city = self.parse_city(elem)
+            if hasattr(self, 'estate_type'):
+                item.estate_type = self.estate_type
+            if hasattr(self, 'exposition_type'):
+                item.exposition_type = self.exposition_type
+            yield item
+
+
+        if len(elements_selector) != 0:
+            new_page = page + 1
+            next_page_url = self.start_urls[0].format(postal_code=postal_code, page=new_page)
+            logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
+            yield scrapy.Request(next_page_url, callback=self.parse, cb_kwargs={'postal_code': postal_code, 'page': new_page})
+        else:
+            logger.debug('No elements found on the page')

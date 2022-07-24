@@ -20,10 +20,36 @@ class ImmonetRepository(Repository[Immonet]):
         return cls.read_by_unique(source_id=source_id)
 
 
+class ImmoweltPostalCodeStatisticsRepository(Repository[ImmoweltPostalCodeStatistics]):
+    @classmethod
+    def read_or_create(cls, postal_code: str,
+                       exposition_type: scrapers.enums.ExpositionType,
+                       estate_type: scrapers.enums.EstateType) -> ImmoweltPostalCodeStatistics:
+        ipcs = cls.read_first(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
+        if not ipcs:
+            cls.create_by_unique(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
+        return ipcs
+
+    @classmethod
+    def create_by_unique(cls, postal_code: str,
+                       exposition_type: scrapers.enums.ExpositionType,
+                       estate_type: scrapers.enums.EstateType) -> ImmoweltPostalCodeStatistics:
+        return cls.create(ImmoweltPostalCodeStatistics(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type))
+
+
 class ImmoweltRepository(Repository[Immowelt]):
     @classmethod
     def read_by_source_id(cls, source_id: int) -> Optional[Immowelt]:
         return cls.read_by_unique(source_id=source_id)
+
+    @classmethod
+    def create(cls, entity: Immowelt) -> Optional[Immowelt]:
+        ipcs = ImmoweltPostalCodeStatisticsRepository.read_by_unique(estate_type=entity.estate_type,
+                                                              exposition_type=entity.exposition_type,
+                                                              postal_code=entity.postal_code)
+        ipcs.total_entries = ipcs.total_entries + 1
+        ImmoweltPostalCodeStatisticsRepository.update(ipcs)
+        return super().create(entity)
 
 
 # class ImmoweltPostalCodeRepository(Repository[ImmoweltPostalCode]):
@@ -42,19 +68,3 @@ class ImmoweltRepository(Repository[Immowelt]):
 #             return None
 #         super().create(immowelt_postal_code)
 
-
-class ImmoweltPostalCodeStatisticsRepository(Repository[ImmoweltPostalCodeStatistics]):
-    @classmethod
-    def read_or_create(cls, postal_code: str,
-                       exposition_type: scrapers.enums.ExpositionType,
-                       estate_type: scrapers.enums.EstateType) -> ImmoweltPostalCodeStatistics:
-        ipcs = cls.read_first(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
-        if not ipcs:
-            cls.create_by_unique(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
-        return ipcs
-
-    @classmethod
-    def create_by_unique(cls, postal_code: str,
-                       exposition_type: scrapers.enums.ExpositionType,
-                       estate_type: scrapers.enums.EstateType) -> ImmoweltPostalCodeStatistics:
-        return cls.create(ImmoweltPostalCodeStatistics(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type))
