@@ -118,7 +118,6 @@ class ImmoweltPostalCodeStatistics(Base):
     total_entries = sqlalchemy.Column(sqlalchemy.Integer, nullable=True, default=0)
     last_search = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
 
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
     updated_at = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
 
     def __repr__(self):

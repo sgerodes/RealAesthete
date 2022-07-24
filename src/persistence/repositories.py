@@ -50,6 +50,11 @@ class ImmoweltPostalCodeStatisticsRepository(Repository[ImmoweltPostalCodeStatis
                        estate_type: scrapers.enums.EstateType) -> ImmoweltPostalCodeStatistics:
         ipcs = cls.read_first(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
         if not ipcs:
-            ipcs = ImmoweltPostalCodeStatistics(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
-            cls.create(ipcs)
+            cls.create_by_unique(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
         return ipcs
+
+    @classmethod
+    def create_by_unique(cls, postal_code: str,
+                       exposition_type: scrapers.enums.ExpositionType,
+                       estate_type: scrapers.enums.EstateType) -> ImmoweltPostalCodeStatistics:
+        return cls.create(ImmoweltPostalCodeStatistics(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type))
