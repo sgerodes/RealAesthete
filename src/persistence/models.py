@@ -20,7 +20,7 @@ class EbayKleinanzeigen(Base):
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True)
     price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, index=True)
-    postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True)
+    postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True)
     url = sqlalchemy.Column(sqlalchemy.String)
 
     source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, index=True)
@@ -49,7 +49,7 @@ class Immonet(Base):
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
     price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), nullable=True, index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
-    postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True, nullable=True) # cant get postal code from the search page
+    postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True) # cant get postal code from the search page
 
     source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
     rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
@@ -75,7 +75,7 @@ class Immowelt(Base):
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
     price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), nullable=True, index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
-    postal_code = sqlalchemy.Column(sqlalchemy.Integer, index=True, nullable=True)
+    postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True)
 
     source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
     rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
@@ -104,17 +104,24 @@ class ImmoweltPostalCode(Base):
         return f'{self.__class__.__name__}({self.id} postal_code={self.postal_code} exists={self.exists})'
 
 
-class ImmoweltPostalCodeRequestLog(Base):
-    __tablename__ = 'ImmoweltPostalCodeRequestLog'
+class ImmoweltPostalCodeStatistics(Base):
+    __tablename__ = 'ImmoweltPostalCodeStatistics'
+    __table_args__ = (
+        sqlalchemy.UniqueConstraint('postal_code', 'exposition_type', 'estate_type'),
+    )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=False)
-    success = sqlalchemy.Column(sqlalchemy.Boolean, index=True, nullable=False)
-    http_code = sqlalchemy.Column(sqlalchemy.Integer, index=True)
-    estate_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=False)
+    estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=False)
 
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
+    total_entries = sqlalchemy.Column(sqlalchemy.Integer, nullable=True, default=0)
+    last_search = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
+
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
+    updated_at = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.id} postal_code={self.postal_code} created_at={self.created_at} success={self.success} http_code={self.http_code} estate_count={self.estate_count})'
-
+        return f'{self.__class__.__name__}({self.id} postal_code={self.postal_code} ' \
+               f'exposition_type={self.exposition_type}, estate_type={self.estate_type}, ' \
+               f'total_entries={self.total_entries}, last_search={self.last_search})'

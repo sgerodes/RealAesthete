@@ -1,7 +1,8 @@
 import logging
 from .generic import Repository
 from typing import Optional
-from .models import EbayKleinanzeigen, Immonet, ImmoweltPostalCode, Immowelt, ImmoweltPostalCodeRequestLog
+from .models import EbayKleinanzeigen, Immonet, ImmoweltPostalCode, Immowelt, ImmoweltPostalCodeStatistics
+from .. import scrapers
 
 
 logger = logging.getLogger(__name__)
@@ -38,12 +39,20 @@ class ImmoweltPostalCodeRepository(Repository[ImmoweltPostalCode]):
         return ipc
 
     @classmethod
-    def create(cls, immowelt_postal_code: ImmoweltPostalCode) -> Optional[ImmoweltPostalCode]:
+    def create(cls, immowelt_postal_code: ImmoweltPostalCode) -> ImmoweltPostalCode:
         if not immowelt_postal_code.postal_code or not len(immowelt_postal_code.postal_code) == 5:
             logger.error(f'Cant create a postal code {immowelt_postal_code.postal_code}. All postal codes need to be 5 in length')
             return None
         super().create(immowelt_postal_code)
 
 
-class ImmoweltPostalCodeRequestLogRepository(Repository[ImmoweltPostalCodeRequestLog]):
-    pass
+class ImmoweltPostalCodeStatisticsRepository(Repository[ImmoweltPostalCodeStatistics]):
+    @classmethod
+    def read_or_create(cls, postal_code: str,
+                       exposition_type: scrapers.enums.ExpositionType,
+                       estate_type: scrapers.enums.EstateType) -> ImmoweltPostalCodeStatistics:
+        ipcs = cls.read_first(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
+        if not ipcs:
+            ipcs = ImmoweltPostalCodeStatistics(postal_code=postal_code, exposition_type=exposition_type, estate_type=estate_type)
+            cls.create(ipcs)
+        return ipcs

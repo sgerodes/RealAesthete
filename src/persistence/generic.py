@@ -1,9 +1,10 @@
 import logging
 import sqlalchemy
 import datetime
-from typing import List, Set, Tuple, TypeVar, Generic, get_args, Optional, Union, Any
+from typing import List, Set, Tuple, TypeVar, Generic, get_args, Optional, Union, Any, FrozenSet
 from .utils import rollback_on_error
 from src import persistence
+from functools import lru_cache
 
 M = TypeVar("M")
 
@@ -50,6 +51,16 @@ class Repository(Generic[M]):
                              f' but it is not a member of the class')
         return cls._get_query().filter_by(**kwargs)
 
+    @classmethod
+    @lru_cache(maxsize=1)
+    def _get_unique_constraints(cls) -> FrozenSet[FrozenSet[str]]:
+        tablename: str = cls._get_model_type().__tablename__
+        sqlalchemy_unique_constraints: List[dict] = sqlalchemy.inspect(persistence.engine).get_unique_constraints(tablename)
+        pks = list(cls._get_models_primary_keys(cls._get_model_type()))
+        unique_with_pks = [c.get('column_names') for c in sqlalchemy_unique_constraints]
+        unique_with_pks.append(pks)
+        return frozenset(frozenset(c) for c in unique_with_pks)
+
     # CREATE
     @classmethod
     @rollback_on_error
@@ -93,16 +104,10 @@ class Repository(Generic[M]):
 
     @classmethod
     def read_by_unique(cls, **kwargs) -> Optional[M]:
-        if len(kwargs) != 1:
-            logger.warning(f'You should only query by a single unique identifier')
-            return None
-        field_name = list(kwargs.keys())[0]
-        field = cls._get_class_field(field_name)
-        if not field:
-            logger.warning(f'No unique field found "{field_name}" in "{cls._get_model_type_name()}"')
-            return None
-        if not field.unique:
-            logger.warning(f'You tried to perform a unique query on a non-unique field "{field_name}" of "{cls._get_model_type_name()}"')
+        column_names = set(kwargs.keys())
+        if column_names not in cls._get_unique_constraints():
+            logger.warning(f'The column combination {column_names} is not a unique constraint in "{cls._get_model_type_name()}". '
+                           f'Existing constraints are {cls._get_unique_constraints()}')
             return None
         logger.debug(f'Reading {cls._get_model_type_name()} by unique: {kwargs}')
         return cls._get_filtered_query(**kwargs).first()
