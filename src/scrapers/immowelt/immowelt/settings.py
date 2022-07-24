@@ -21,7 +21,7 @@ NEWSPIDER_MODULE = spiders.__name__
 HTTPERROR_ALLOWED_CODES = [404]
 
 ITEM_PIPELINES = {
-    get_full_package_name_for_class(pipelines.ImmoweltPipeline): 300
+    get_full_package_name_for_class(pipelines.ImmoweltPersistencePipeline): 300
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

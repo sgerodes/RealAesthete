@@ -90,18 +90,18 @@ class Immowelt(Base):
         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'
 
 
-class ImmoweltPostalCode(Base):
-    __tablename__ = 'ImmoweltPostalCode'
-
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=False, unique=True)
-    exists = sqlalchemy.Column(sqlalchemy.Boolean, index=True, nullable=False, default=True)
-
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
-    updated_at = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self.id} postal_code={self.postal_code} exists={self.exists})'
+# class ImmoweltPostalCode(Base):
+#     __tablename__ = 'ImmoweltPostalCode'
+#
+#     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+#     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=False, unique=True)
+#     exists = sqlalchemy.Column(sqlalchemy.Boolean, index=True, nullable=False, default=True)
+#
+#     created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
+#     updated_at = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
+#
+#     def __repr__(self):
+#         return f'{self.__class__.__name__}({self.id} postal_code={self.postal_code} exists={self.exists})'
 
 
 class ImmoweltPostalCodeStatistics(Base):

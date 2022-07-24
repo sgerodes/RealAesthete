@@ -8,4 +8,5 @@ from ..utils import run_parallel_spiders
 def run_spider():
     os.environ.setdefault('SCRAPY_SETTINGS_MODULE', settings.__name__)
     spiders = (EbayFlatRentSpider, EbayFlatBuySpider, EbayHouseRentSpider, EbayHouseBuySpider)
+    # spiders = (EbayFlatRentSpider, )
     run_parallel_spiders(spiders=spiders, project_settings=get_project_settings())

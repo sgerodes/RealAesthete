@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class EbayFlatRentSpider(EbayKleinanzeigenSpider, scrapy.Spider):
     name = 'EbayFlatRentSpider'
     start_urls = [
-         "https://www.ebay-kleinanzeigen.de/s-wohnung-mieten/anzeige:angebote/c203",
+         "https://www.ebay-kleinanzeigen.de/s-wohnung-mieten/anzeige:angebote/seite:1/c203",
     ]
     estate_type = EstateType.FLAT
     exposition_type = ExpositionType.RENT

@@ -32,10 +32,6 @@ class ImmoweltSpider:
         plz_to_10000 = [('00000' + str(plz))[-5:] for plz in range(10 ** 4)]
         return plz_to_10000 + plz_10000_to_99999
 
-    def get_url_for_zip_code(self, zip_code: int):
-        # This will work for every zip code
-        return ImmoweltSpider.BASE_SEARCH_URL.format(zip_code=str(zip_code))
-
     def start_requests(self):
         ua = UserAgent()
         headers = get_random_header_set()

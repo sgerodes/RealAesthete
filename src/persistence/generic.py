@@ -81,8 +81,9 @@ class Repository(Generic[M]):
             logger.error(f'The instance you passing in has already an id. Aborting'
                          f'Probably tried to create already existing entity: {entity}')
             return None
-        cls._get_session().add(entity)
-        cls._get_session().commit()
+        session = cls._get_session()
+        session.add(entity)
+        session.commit()
         logger.debug(f'Created {cls._get_model_type_name()} {entity}')
         return entity
 
@@ -164,8 +165,9 @@ class Repository(Generic[M]):
     def update(cls, entity: M) -> M:
         if hasattr(entity, 'updated_at'):
             entity.updated_at = datetime.datetime.now()
-        cls._get_session().add(entity)
-        cls._get_session().commit()
+        session = cls._get_session()
+        session.add(entity)
+        session.commit()
         logger.debug(f'Updated {cls._get_model_type_name()} {entity}')
         return entity
 
@@ -181,8 +183,9 @@ class Repository(Generic[M]):
     @classmethod
     @rollback_on_error
     def delete(cls, entity: M) -> M:
-        cls._get_session().delete(entity)
-        cls._get_session().commit()
+        session = cls._get_session()
+        session.delete(entity)
+        session.commit()
         logger.debug(f'Deleted {cls._get_model_type_name()} {entity}')
         return entity
 
