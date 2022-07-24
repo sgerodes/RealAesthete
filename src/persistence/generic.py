@@ -29,6 +29,14 @@ class Repository(Generic[M]):
         return cls._get_session().query(cls._get_model_type())
 
     @classmethod
+    def _get_filtered_query(cls, **kwargs) -> sqlalchemy.orm.query.Query:  # noqa
+        for k in kwargs.keys():
+            if k not in dir(cls._get_model_type()):
+                logger.error(f'Tried to query "{cls._get_model_type_name()}" by "{k}",'
+                             f' but it is not a member of the class')
+        return cls._get_query().filter_by(**kwargs)
+
+    @classmethod
     @lru_cache(maxsize=1)
     def _get_model_type(cls):
         return get_args(cls.__orig_bases__[0])[0]  # noqa
@@ -39,23 +47,10 @@ class Repository(Generic[M]):
         return cls._get_model_type().__name__
 
     @classmethod
-    def _get_class_field(cls, field_name: str):
-        if field_name not in cls._get_model_type().__dict__:
-            return None
-        return cls._get_model_type().__dict__[field_name]
-
-    @classmethod
-    def _get_models_primary_keys(cls, db_model) -> Tuple[str]:
-        alchemy_pks = sqlalchemy.inspection.inspect(db_model).primary_key
-        return tuple(alchemy_column.name for alchemy_column in alchemy_pks) # noqa
-
-    @classmethod
-    def _get_filtered_query(cls, **kwargs) -> sqlalchemy.orm.query.Query:  # noqa
-        for k in kwargs.keys():
-            if k not in dir(cls._get_model_type()):
-                logger.error(f'Tried to query "{cls._get_model_type_name()}" by "{k}",'
-                             f' but it is not a member of the class')
-        return cls._get_query().filter_by(**kwargs)
+    @lru_cache(maxsize=1)
+    def _get_primary_keys(cls) -> Tuple[str]:
+        alchemy_pks = sqlalchemy.inspection.inspect(cls._get_model_type()).primary_key
+        return tuple(alchemy_column.name for alchemy_column in alchemy_pks)  # noqa
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -65,7 +60,7 @@ class Repository(Generic[M]):
         sqlalchemy_unique_constraints: List[dict] = sqlalchemy.inspect(persistence.engine).get_unique_constraints(tablename)
 
         # Get Primary keys
-        pks = list(cls._get_models_primary_keys(cls._get_model_type()))
+        pks = list(cls._get_primary_keys())
         unique_with_pks: List[list] = [c.get('column_names') for c in sqlalchemy_unique_constraints]
         unique_with_pks.append(pks)
 
@@ -101,25 +96,26 @@ class Repository(Generic[M]):
 
     # READ
     @classmethod
-    def read_by_primary_keys(cls, primary_keys: Union[List, Set, Tuple, Any]) -> Optional[M]:
-        model_pks = cls._get_models_primary_keys(cls._get_model_type())
-        if isinstance(primary_keys, list) or isinstance(primary_keys, set) or isinstance(primary_keys, tuple):
-            if len(primary_keys) != len(model_pks):
-                # logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-                #              f'got {len(primary_keys)} {primary_keys}, should be {len(model_pks)}. Model primary key names are {model_pks}')
-                # return None
-                raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-                                      f'got {len(primary_keys)} {primary_keys}, should be {len(model_pks)}. '
-                                      f'Model primary key names are {model_pks}')
-        else:
-            if len(model_pks) != 1:
-                # logger.error(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-                #              f'got {primary_keys=}, model primary key names are {model_pks}')
-                #return None
-                raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-                             f'got {primary_keys=}, model primary key names are {model_pks}')
-        logger.debug(f'Reading {cls._get_model_type_name()} with primary keys: {primary_keys}')
-        return cls._get_query().get(primary_keys)
+    #def read_by_primary_keys(cls, primary_keys: Union[List, Set, Tuple, Any]) -> Optional[M]:
+    def read_by_primary_keys(cls, *args, **kwargs) -> Optional[M]:
+        if args and kwargs:
+            raise RepositoryError(f'You cant read by primary keys using both args and kwargs')
+        pks_values = args or kwargs
+        # model_pks = cls._get_primary_keys()
+        # if args:
+        #     if len(args) != len(model_pks):
+        #         raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
+        #                               f'got primary_keys={args}, model primary key names are {model_pks}')
+        #     pks_values = args
+        # elif kwargs:
+        #     if len(kwargs) != len(model_pks):
+        #         raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
+        #                               f'got primary_keys={kwargs}, model primary key names are {model_pks}')
+        #     pks_values = kwargs
+        # else:
+        #     raise RepositoryError(f'Tried to read by primary keys without specifying arguments')
+        logger.debug(f'Reading {cls._get_model_type_name()} with primary keys: {pks_values}')
+        return cls._get_query().get(pks_values)
 
     @classmethod
     def read_by_unique(cls, **kwargs) -> Optional[M]:
