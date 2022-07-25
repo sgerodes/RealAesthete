@@ -10,3 +10,9 @@ def run_spider():
     spiders = (EbayFlatRentSpider, EbayFlatBuySpider, EbayHouseRentSpider, EbayHouseBuySpider)
     # spiders = (EbayFlatRentSpider, )
     run_parallel_spiders(spiders=spiders, project_settings=get_project_settings())
+
+
+def get_spider_and_settings():
+    os.environ.setdefault('SCRAPY_SETTINGS_MODULE', settings.__name__)
+    spiders = (EbayFlatRentSpider, EbayFlatBuySpider, EbayHouseRentSpider, EbayHouseBuySpider)
+    return [(s,get_project_settings()) for s in spiders]
