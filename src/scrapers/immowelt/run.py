@@ -15,4 +15,5 @@ def run_spider():
 def get_spider_and_settings():
     os.environ.setdefault('SCRAPY_SETTINGS_MODULE', settings.__name__)
     spiders = (ImmoweltFlatRentSpider, ImmoweltFlatBuySpider, ImmoweltHouseRentSpider, ImmoweltHouseBuySpider)
+    #spiders = (ImmoweltFlatRentSpider, )
     return [(s,get_project_settings()) for s in spiders]

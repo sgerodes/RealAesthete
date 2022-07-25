@@ -1,15 +1,17 @@
 import logging
 import datetime
+from . import utils
 
 
 logger = logging.getLogger(__name__)
 
-first_create = datetime.datetime.utcnow()
-total_read = 0
-total_created = 0
+
+global_stats = utils.PersistencePipelineStats('Global')
+
 
 class DefaultPersistencePipeline:
     DUPLICATES_THRESHOLD = 15
+    class_stats = None
 
     def __init__(self):
         self.name = self.__class__.__name__
@@ -19,17 +21,19 @@ class DefaultPersistencePipeline:
         if not hasattr(self, 'parser'):
             logger.error(f'You forgot to specify the parser for {self.__class__}')
 
+        self.__class__.class_stats = utils.PersistencePipelineStats(f'{self.__class__.__name__}')
+        self.instance_stats = utils.PersistencePipelineStats(None)
+
     def process_item(self, item, spider):
+        if not self.instance_stats.name:
+            self.instance_stats.name = f'{spider.name}'
+
+        global_stats.add_read()
+        self.__class__.class_stats.add_read()
+        self.instance_stats.add_read()
+
         estate_type = spider.estate_type if hasattr(spider, 'estate_type') else ''
         exposition_type = spider.exposition_type if hasattr(spider, 'exposition_type') else ''
-
-        global first_create
-        global total_read
-        global total_created
-
-        total_read += 1
-        logger.debug(f'Reading rate is {(datetime.datetime.utcnow() - first_create) / total_read}')
-
         logger.debug(f'processing item with source_id={item.get("source_id")}')
         db_model = self.repository.read_by_source_id(item.get('source_id'))
         if db_model:
@@ -41,8 +45,9 @@ class DefaultPersistencePipeline:
             self.duplicates_score -= 0.5
             self.duplicates_score = max(self.duplicates_score, 0)
 
-            total_created += 1
-            logger.debug(f'Creation rate is {(datetime.datetime.utcnow() - first_create) / total_created}')
+            global_stats.add_create()
+            self.__class__.class_stats.add_create()
+            self.instance_stats.add_create()
 
         if self.duplicates_score > self.DUPLICATES_THRESHOLD:
             logger.debug(

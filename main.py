@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     spiders_and_settings = list()
-    #spiders_and_settings.extend(ebay_kleinanzeigen_run.get_spider_and_settings())
-    #spiders_and_settings.extend(immonet_run.get_spider_and_settings())
+    spiders_and_settings.extend(ebay_kleinanzeigen_run.get_spider_and_settings())
+    spiders_and_settings.extend(immonet_run.get_spider_and_settings())
     spiders_and_settings.extend(immowelt_run.get_spider_and_settings())
     utils.run_parallel_spiders_2(spiders_and_settings)
 
