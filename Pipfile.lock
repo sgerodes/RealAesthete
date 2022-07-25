@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4d521b9fc9d64f96d189e0cb512719fe7433515114075885636b299bbedf1e5b"
+            "sha256": "b6e1fd428f92903acb2f25c0d22b6faf52b1cc647cee9b275ed652695c7cabb6"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.10"
+            "python_version": "3.7"
         },
         "sources": [
             {
@@ -526,19 +526,19 @@
         },
         "scrapy": {
             "hashes": [
-                "sha256:56fd55a59d0f329ce752892358abee5a6b50b4fc55a40420ea317dc617553827",
-                "sha256:e977f57d4e828f25d2702e8c2212e8abcd7d6ce45be560f1830a39432a494c09"
+                "sha256:53528bcaf8c2c77aca359af11f349dec5dad98845a13d4c0bb9abd07f302298d",
+                "sha256:55e21181165f25337105fff1efc8393296375cea7de699a7e703bbd265595f26"
             ],
             "index": "pypi",
-            "version": "==2.6.1"
+            "version": "==2.6.2"
         },
         "scrapy-dot-items": {
             "hashes": [
-                "sha256:2118cc0cf44bcf99bb6543f7466e0651f0710c07160b40b5da4416987265c0bc",
-                "sha256:54cc2edbef890672f2a2b8a8e3b20cc1d16c92f0584f03caa60922100e15684c"
+                "sha256:867ab2dfeefcf92e475a7b4a8579e347acbf4111d6442c1043678a9dd185a386",
+                "sha256:c385dd02c4a519e353508cf5ad185bd47e49671a4ddb9ed32b09dcd2b5a4c22a"
             ],
             "index": "pypi",
-            "version": "==1.0.0"
+            "version": "==1.0.2"
         },
         "scrapy-rotating-proxies": {
             "hashes": [
@@ -639,11 +639,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:8298d6d56d39be0e3bc13c1c97d133f9b45d797169a0e11cdd0e0489d786f7ec",
-                "sha256:879ba4d1e89654d9769ce13121e0f94310ea32e8d2f8cf587b77c08bbcdb30d6"
+                "sha256:c33ccba33c819596124764c23a97d25f32b28433ba0dedeb77d873a38722c9bc",
+                "sha256:ea6e8fb210b19d950fab93b60c9009226c63a28808bc8386e05301e25883ac0a"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5' and python_version < '4'",
-            "version": "==1.26.10"
+            "version": "==1.26.11"
         },
         "w3lib": {
             "hashes": [
