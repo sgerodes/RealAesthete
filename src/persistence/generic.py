@@ -142,7 +142,7 @@ class Repository(Generic[M]):
 
     @classmethod
     def read_all(cls, limit: int = None, offset: int = None, **kwargs) -> Optional[List[M]]:
-        logger.debug(f'Reading all "{cls._get_model_type_name()}" with {limit=} {offset=} filters {kwargs}')
+        logger.debug(f'Reading all "{cls._get_model_type_name()}" with limit={limit} offset={offset} filters {kwargs}')
         filtered_query = cls._get_filtered_query(**kwargs)
         if limit:
             filtered_query = filtered_query.limit(limit)

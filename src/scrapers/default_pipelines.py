@@ -38,7 +38,7 @@ class DefaultPersistencePipeline:
         db_model = self.repository.read_by_source_id(item.get('source_id'))
         if db_model:
             self.duplicates_score += 1
-            logger.debug(f'Duplicate found {self.duplicates_score=}, {estate_type}, {exposition_type}')
+            logger.debug(f'Duplicate found duplicates_score={self.duplicates_score}, {estate_type}, {exposition_type}')
         else:
             new_db_model = self.parser.create_from_scrapy_item(item)
             self.repository.create(new_db_model)

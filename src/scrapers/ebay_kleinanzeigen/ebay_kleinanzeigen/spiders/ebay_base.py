@@ -16,7 +16,7 @@ def catch_errors(func: Callable):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            logger.warning(f'Error occurred while executing function "{func.__name__}" with {args=}, {kwargs=}')
+            logger.warning(f'Error occurred while executing function "{func.__name__}" with args={args}, kwargs={kwargs}')
             logger.exception(e)
             return None
     return wrapper
@@ -117,7 +117,7 @@ class EbayKleinanzeigenSpider:
 
         for elem in response.css(css_index_selector):
             source_id = elem.xpath("@data-adid").get()
-            logger.debug(f'processing item with {source_id=}')
+            logger.debug(f'processing item with source_id={source_id}')
 
             item = EbayKleinanzeigenItem()
             item.source_id = source_id

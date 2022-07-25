@@ -22,7 +22,7 @@ def catch_errors(func: Callable):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            logger.warning(f'Error occurred while executing function "{func.__name__}" with {args=}, {kwargs=}')
+            logger.warning(f'Error occurred while executing function "{func.__name__}" with args={args}, kwargs={kwargs}')
             logger.exception(e)
             return None
     return wrapper
@@ -106,7 +106,7 @@ class ImmoweltSpider:
         css_index_selector = "[class^='EstateItem']"
 
         if response.status == 404:
-            logger.warning(f'Request for {postal_code=} is 404. {response.request.url=}')
+            logger.warning(f'Request for postal_code={postal_code} is 404. response.request.url={response.request.url}')
 
         elements_selector = response.css(css_index_selector)
 
@@ -118,7 +118,7 @@ class ImmoweltSpider:
             ipcs.last_search = datetime.datetime.utcnow()
             persistence.ImmoweltPostalCodeStatisticsRepository.update(ipcs)
         else:
-            logger.error(f'No body tag. We are probably blocked. {response.body=}')
+            logger.error(f'No body tag. We are probably blocked. response.body={response.body}')
             CloseSpider('No body tag. We are probably blocked.')
 
         for elem in elements_selector:

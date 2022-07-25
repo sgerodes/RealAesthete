@@ -16,7 +16,7 @@ def catch_errors(func: Callable):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            logger.warning(f'Error occurred while executing function "{func.__name__}" with {args=}, {kwargs=}')
+            logger.warning(f'Error occurred while executing function "{func.__name__}" with args={args}, kwargs={kwargs}')
             logger.exception(e)
             return None
     return wrapper
@@ -81,7 +81,7 @@ class ImmonetSpider:
 
         for elem in response.css(css_index_selector):
             source_id = self.parse_item_id(elem.xpath("@id").get())
-            logger.debug(f'parsing item with {source_id=}')
+            logger.debug(f'parsing item with source_id={source_id}')
 
             item = ImmonetItem()
             item['source_id'] = source_id
