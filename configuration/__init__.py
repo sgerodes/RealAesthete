@@ -7,6 +7,3 @@ def configure_project():
     load_dotenv()
     configure_logging()
     dot_items_globally()
-
-
-configure_project()
