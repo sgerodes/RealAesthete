@@ -4,16 +4,31 @@ import datetime
 from src.persistence import enums
 from .. import scrapers
 from sqlalchemy.ext.declarative import declarative_base
-
+from . import utils
 
 logger = logging.getLogger(__name__)
-Base = declarative_base()
+#Base = declarative_base()
 
 
-class EbayKleinanzeigen(Base):
-    __tablename__ = 'EbayKleinanzeigen'
+class Base(declarative_base()):
+    __abstract__ = True
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+
+    @utils.cached_classproperty
+    def __tablename__(cls):
+        return cls.__name__ #.lower()
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.id})'
+
+
+class EstateBase(Base):
+    __abstract__ = True
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
+
+
+class EbayKleinanzeigen(EstateBase):
     source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.EbayKleinanzeigen)
 
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True)
@@ -28,8 +43,6 @@ class EbayKleinanzeigen(Base):
     city = sqlalchemy.Column(sqlalchemy.String)
     online_since = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
 
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
-
     def get_full_url(self):
         # works both
         # return 'https://www.ebay-kleinanzeigen.de/s-anzeige/' + self.source_id
@@ -39,10 +52,7 @@ class EbayKleinanzeigen(Base):
         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'
 
 
-class Immonet(Base):
-    __tablename__ = 'Immonet'
-
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class Immonet(EstateBase):
     source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.Immonet)
 
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
@@ -56,8 +66,6 @@ class Immonet(Base):
     city = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     foreclosure = sqlalchemy.Column(sqlalchemy.Boolean)
 
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
-
     def get_full_url(self):
         return 'https://www.immonet.de/angebot/' + self.source_id
 
@@ -65,10 +73,7 @@ class Immonet(Base):
         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'
 
 
-class Immowelt(Base):
-    __tablename__ = 'Immowelt'
-
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class Immowelt(EstateBase):
     source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.Immowelt)
 
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
@@ -80,8 +85,6 @@ class Immowelt(Base):
     source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
     rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
     city = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-
-    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
 
     def get_full_url(self):
         return 'https://www.immowelt.de/expose/' + self.source_id
@@ -105,12 +108,10 @@ class Immowelt(Base):
 
 
 class ImmoweltPostalCodeStatistics(Base):
-    __tablename__ = 'ImmoweltPostalCodeStatistics'
     __table_args__ = (
         sqlalchemy.UniqueConstraint('postal_code', 'exposition_type', 'estate_type'),
     )
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=False)
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=False)
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=False)

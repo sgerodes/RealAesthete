@@ -21,8 +21,16 @@ class Repository(Generic[M]):
     def _get_session(cls):
         # TODO probably replace with Session(bind=engine, expire_on_commit=False) or with a sessionmaker()
         # https://stackoverflow.com/questions/12223335/sqlalchemy-creating-vs-reusing-a-session
-        return persistence.session
-        # return sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True)
+        #return persistence.session
+        return sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True)
+
+    @classmethod
+    def _add_and_commit(cls, entity):
+        session = cls._get_session()
+        entity = session.merge(entity)
+        session.add(entity)
+        session.commit()
+
 
     @classmethod
     def _get_query(cls):
@@ -81,9 +89,7 @@ class Repository(Generic[M]):
             logger.error(f'The instance you passing in has already an id. Aborting'
                          f'Probably tried to create already existing entity: {entity}')
             return None
-        session = cls._get_session()
-        session.add(entity)
-        session.commit()
+        cls._add_and_commit(entity)
         logger.debug(f'Created {cls._get_model_type_name()} {entity}')
         return entity
 
@@ -169,9 +175,7 @@ class Repository(Generic[M]):
     def update(cls, entity: M) -> M:
         if hasattr(entity, 'updated_at'):
             entity.updated_at = datetime.datetime.now()
-        session = cls._get_session()
-        session.add(entity)
-        session.commit()
+        cls._add_and_commit(entity)
         logger.debug(f'Updated {cls._get_model_type_name()} {entity}')
         return entity
 
@@ -187,9 +191,7 @@ class Repository(Generic[M]):
     @classmethod
     @rollback_on_error
     def delete(cls, entity: M) -> M:
-        session = cls._get_session()
-        session.delete(entity)
-        session.commit()
+        cls._add_and_commit(entity)
         logger.debug(f'Deleted {cls._get_model_type_name()} {entity}')
         return entity
 

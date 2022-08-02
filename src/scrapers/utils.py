@@ -1,5 +1,7 @@
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
+from typing import List, Tuple
+import scrapy
 import datetime
 import logging
 import os
@@ -18,7 +20,7 @@ def run_parallel_spiders(spiders, project_settings):
     reactor.run()
 
 
-def run_parallel_spiders_2(spiders_and_settings):
+def run_parallel_spiders_2(spiders_and_settings: List[Tuple[scrapy.spiders.Spider, str]]):
     activate_spiders = os.getenv('ACTIVATE_SPIDERS')
     if not activate_spiders:
         logger.warning('ACTIVATE_SPIDERS env variable is not set. Will not crawl')
