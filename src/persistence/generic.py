@@ -1,15 +1,18 @@
 import logging
 import sqlalchemy
+import os
 import datetime
 from typing import List, Set, Tuple, TypeVar, Generic, get_args, Optional, Union, Any, FrozenSet
-from .utils import rollback_on_error
-from src import persistence
 from functools import lru_cache
 from .errors import RepositoryError
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.elements import BinaryExpression
+
+# TODO transactions high prio https://docs.sqlalchemy.org/en/14/orm/session_transaction.html
+# TODO async low prio
 
 
-M = TypeVar("M")
+M = TypeVar('M')
 
 
 logger = logging.getLogger(__name__)
@@ -18,36 +21,33 @@ logger = logging.getLogger(__name__)
 class Repository(Generic[M]):
 
     @classmethod
-    def _get_session(cls):
-        # TODO probably replace with Session(bind=engine, expire_on_commit=False) or with a sessionmaker()
-        # https://stackoverflow.com/questions/12223335/sqlalchemy-creating-vs-reusing-a-session
-        #return persistence.session
-        return sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True)
+    def create_and_set_engine(cls):
+        db_uri = os.getenv('SQLALCHEMY_DATABASE_URI')
+        logger.info(f'Creating engine automatically')
+        if not db_uri:
+            raise RepositoryError('Cant automatically create an engine, because the SQLALCHEMY_DATABASE_URI '
+                                  'environment variable is not set')
+        engine = sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'))
+        cls.set_engine(engine)
 
     @classmethod
-    def _add_and_commit(cls, entity):
-        session = cls._get_session()
-        entity = session.merge(entity)
-        session.add(entity)
-        session.commit()
-
+    def get_engine(cls):
+        return cls.__engine__
 
     @classmethod
-    def _get_query(cls):
-        return cls._get_session().query(cls._get_model_type())
-
-    @classmethod
-    def _get_filtered_query(cls, **kwargs) -> sqlalchemy.orm.query.Query:  # noqa
-        for k in kwargs.keys():
-            if k not in dir(cls._get_model_type()):
-                logger.error(f'Tried to query "{cls._get_model_type_name()}" by "{k}",'
-                             f' but it is not a member of the class')
-        return cls._get_query().filter_by(**kwargs)
+    def set_engine(cls, engine: sqlalchemy.engine.base.Engine):
+        logger.info(f'Engine is set for {cls.__name__} with id {id(engine)}')
+        cls.__engine__ = engine
 
     @classmethod
     @lru_cache(maxsize=1)
     def _get_model_type(cls):
-        return get_args(cls.__orig_bases__[0])[0]  # noqa
+        model = get_args(cls.__orig_bases__[0])[0]  # noqa
+        for clazz in model.__mro__:
+            if 'sqlalchemy' in str(clazz):
+                return model
+        raise RepositoryError(f'Provided Model {model} in {cls.__name__} probably is not a sqlalchemy model. '
+                              f'MRO of the class is {model.__mro__}')
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -62,10 +62,16 @@ class Repository(Generic[M]):
 
     @classmethod
     @lru_cache(maxsize=1)
+    def _get_column_names(cls) -> Set[str]:
+        columns = sqlalchemy.inspection.inspect(cls._get_model_type()).c
+        return set(alchemy_column.name for alchemy_column in columns)  # noqa
+
+    @classmethod
+    @lru_cache(maxsize=1)
     def _get_unique_constraints(cls) -> Set[FrozenSet[str]]:
         tablename: str = cls._get_model_type().__tablename__
         # Get multicolumn unique constraints
-        sqlalchemy_unique_constraints: List[dict] = sqlalchemy.inspect(persistence.engine).get_unique_constraints(tablename)
+        sqlalchemy_unique_constraints: List[dict] = sqlalchemy.inspect(cls.get_engine()).get_unique_constraints(tablename)
 
         # Get Primary keys
         pks = list(cls._get_primary_keys())
@@ -78,9 +84,49 @@ class Repository(Generic[M]):
                 unique_with_pks.append([col.name])
         return set(frozenset(c) for c in unique_with_pks)
 
+    @classmethod
+    def _add_and_commit(cls, entity: M) -> Optional[M]:
+        #with sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True) as session:
+        with sqlalchemy.orm.Session(bind=cls.get_engine()) as session:
+            try:
+                merged_entity = session.merge(entity)
+                session.add(merged_entity)
+                session.flush()
+                # session.refresh(merged_entity)
+                session.expunge_all()
+                session.commit()
+                return merged_entity
+            except (sqlalchemy.exc.IntegrityError,
+                    sqlalchemy.exc.ProgrammingError,
+                    sqlalchemy.exc.DatabaseError,
+                    sqlalchemy.exc.InvalidRequestError) as e:
+                logger.exception(e)
+                logger.warning(f'Rolling back the db session because of an error')
+                session.rollback()
+                return None
+            finally:
+                session.close()
+
+    @classmethod
+    def _get_query(cls):
+        session = sqlalchemy.orm.Session(bind=cls.get_engine(), expire_on_commit=True)
+        return session.query(cls._get_model_type())
+
+    @classmethod
+    def _get_filtered_query(cls, *args: BinaryExpression, **kwargs) -> sqlalchemy.orm.query.Query:  # noqa
+        for a in args:
+            if not isinstance(a, BinaryExpression):
+                raise RepositoryError(f'args of type sqlalchemy.sql.elements.BinaryExpression are only allowed, but got {a} of type {type(a)}')
+        for k in kwargs.keys():
+            if k not in cls._get_column_names():
+                # TODO maybe raise an error?
+                logger.warning(f'Tried to query "{cls._get_model_type_name()}" by "{k}",'
+                             f' but it is not a member of the class')
+        return cls._get_query().filter(*args).filter_by(**kwargs)
+
     # CREATE
     @classmethod
-    @rollback_on_error
+    #@rollback_on_error
     def create(cls, entity: M) -> Optional[M]:
         if not entity:
             logger.error(f'Tried to create empty object')
@@ -89,13 +135,13 @@ class Repository(Generic[M]):
             logger.error(f'The instance you passing in has already an id. Aborting'
                          f'Probably tried to create already existing entity: {entity}')
             return None
-        cls._add_and_commit(entity)
+        entity = cls._add_and_commit(entity)
         logger.debug(f'Created {cls._get_model_type_name()} {entity}')
         return entity
 
     @classmethod
-    @rollback_on_error
-    def create_all(cls, entities_list: List[M]) -> Optional[List[M]]:
+    #@rollback_on_error
+    def create_all(cls, entities_list: List[M]) -> List[M]:
         for e in entities_list:
             cls.create(e)
         logger.debug(f'Created {len(entities_list)} entities')
@@ -108,24 +154,11 @@ class Repository(Generic[M]):
         if args and kwargs:
             raise RepositoryError(f'You cant read by primary keys using both args and kwargs')
         pks_values = args or kwargs
-        # model_pks = cls._get_primary_keys()
-        # if args:
-        #     if len(args) != len(model_pks):
-        #         raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-        #                               f'got primary_keys={args}, model primary key names are {model_pks}')
-        #     pks_values = args
-        # elif kwargs:
-        #     if len(kwargs) != len(model_pks):
-        #         raise RepositoryError(f'Invalid amount of primary keys provided for model {cls._get_model_type_name()}.'
-        #                               f'got primary_keys={kwargs}, model primary key names are {model_pks}')
-        #     pks_values = kwargs
-        # else:
-        #     raise RepositoryError(f'Tried to read by primary keys without specifying arguments')
         logger.debug(f'Reading {cls._get_model_type_name()} with primary keys: {pks_values}')
         return cls._get_query().get(pks_values)
 
     @classmethod
-    def read_by_unique(cls, **kwargs) -> Optional[M]:
+    def read_by_unique(cls, *args: Union[BinaryExpression, bool], **kwargs) -> Optional[M]:
         column_names = set(kwargs.keys())
         if column_names not in cls._get_unique_constraints():
             # logger.warning(f'The column combination {column_names} is not a unique constraint in "{cls._get_model_type_name()}". '
@@ -134,22 +167,24 @@ class Repository(Generic[M]):
             raise RepositoryError(f'The column combination {column_names} is not a unique constraint in "{cls._get_model_type_name()}". '
                            f'Existing constraints are {cls._get_unique_constraints()}')
         logger.debug(f'Reading {cls._get_model_type_name()} by unique: {kwargs}')
-        return cls._get_filtered_query(**kwargs).first()
+        return cls._get_filtered_query(*args, **kwargs).first()
 
     @classmethod
-    def read_first(cls, **kwargs) -> Optional[M]:
+    def read_first(cls, *args: Union[BinaryExpression, bool], **kwargs) -> Optional[M]:
         logger.debug(f'Reading first {cls._get_model_type_name()} with filters {kwargs}')
-        return cls._get_filtered_query(**kwargs).first()
+        return cls._get_filtered_query(*args, **kwargs).first()
+
+    # @classmethod
+    # def read_last(cls, **kwargs) -> Optional[M]:
+    #     logger.debug(f'Reading last {cls._get_model_type_name()} with filters {kwargs}')
+    #     return cls._get_filtered_query(**kwargs).order_by(cls._get_model_type().id.desc()).first()
 
     @classmethod
-    def read_last(cls, **kwargs) -> Optional[M]:
-        logger.debug(f'Reading last {cls._get_model_type_name()} with filters {kwargs}')
-        return cls._get_filtered_query(**kwargs).order_by(cls._get_model_type().id.desc()).first()
-
-    @classmethod
-    def read_all(cls, limit: int = None, offset: int = None, **kwargs) -> Optional[List[M]]:
-        logger.debug(f'Reading all "{cls._get_model_type_name()}" with limit={limit} offset={offset} filters {kwargs}')
-        filtered_query = cls._get_filtered_query(**kwargs)
+    def read_all(cls, *args: Union[BinaryExpression, bool], limit: int = None, offset: int = None, **kwargs) -> Optional[List[M]]:
+        # TODO change limit and offset, because some columns can be named like that
+        str_args = str([str(a) for a in args]) if args else ''
+        logger.debug(f'Reading all "{cls._get_model_type_name()}" with limit={limit} offset={offset} filters: {kwargs if kwargs else ""} {str_args}')
+        filtered_query = cls._get_filtered_query(*args, **kwargs)
         if limit:
             filtered_query = filtered_query.limit(limit)
         if offset:
@@ -157,13 +192,13 @@ class Repository(Generic[M]):
         return filtered_query.all()
 
     @classmethod
-    def read_all_paged(cls, page=0, page_size=None, **kwargs) -> Optional[List[M]]:
-        return cls.read_all(limit=page_size, offset=page*page_size, **kwargs)
+    def read_all_paged(cls, *args: Union[BinaryExpression, bool], page=0, page_size=None, **kwargs) -> Optional[List[M]]:
+        return cls.read_all(*args, limit=page_size, offset=page*page_size, **kwargs)
 
     @classmethod
-    def exists(cls, **kwargs) -> bool:
+    def exists(cls, *args: Union[BinaryExpression, bool], **kwargs) -> bool:
         logger.debug(f'Checking existence of {cls._get_model_type_name()} with filters {kwargs}')
-        return cls._get_filtered_query(**kwargs).first() is not None
+        return cls._get_filtered_query(*args, **kwargs).first() is not None
 
     # @classmethod
     # def distinct(cls, **kwargs) -> Optional[List[Any]]:
@@ -171,16 +206,16 @@ class Repository(Generic[M]):
 
     # UPDATE
     @classmethod
-    @rollback_on_error
+    #@rollback_on_error
     def update(cls, entity: M) -> M:
         if hasattr(entity, 'updated_at'):
             entity.updated_at = datetime.datetime.now()
-        cls._add_and_commit(entity)
+        entity = cls._add_and_commit(entity)
         logger.debug(f'Updated {cls._get_model_type_name()} {entity}')
         return entity
 
     @classmethod
-    @rollback_on_error
+    #@rollback_on_error
     def update_all(cls, entities_list: List[M]) -> List[M]:
         for e in entities_list:
             cls.update(e)
@@ -189,14 +224,14 @@ class Repository(Generic[M]):
 
     # DELETE
     @classmethod
-    @rollback_on_error
+    #@rollback_on_error
     def delete(cls, entity: M) -> M:
-        cls._add_and_commit(entity)
+        entity = cls._add_and_commit(entity)
         logger.debug(f'Deleted {cls._get_model_type_name()} {entity}')
         return entity
 
     @classmethod
-    @rollback_on_error
+    #@rollback_on_error
     def delete_all(cls, entities_list: List[M]) -> List[M]:
         for e in entities_list:
             cls.delete(e)

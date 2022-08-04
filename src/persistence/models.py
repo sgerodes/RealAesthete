@@ -5,6 +5,8 @@ from src.persistence import enums
 from .. import scrapers
 from sqlalchemy.ext.declarative import declarative_base
 from . import utils
+from functools import lru_cache
+import inflection
 
 logger = logging.getLogger(__name__)
 #Base = declarative_base()
@@ -17,7 +19,9 @@ class Base(declarative_base()):
 
     @utils.cached_classproperty
     def __tablename__(cls):
-        return cls.__name__ #.lower()
+        return cls.__name__
+        # inflection.tableize(cls.__name__)
+        # return inflection.underscore(cls.__name__) # TODO use a snake case method later
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id})'
