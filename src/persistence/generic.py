@@ -21,17 +21,23 @@ logger = logging.getLogger(__name__)
 class Repository(Generic[M]):
 
     @classmethod
-    def create_and_set_engine(cls, database_uri: str = None):
+    def _create_engine(cls, database_uri: str = None) -> sqlalchemy.engine.base.Engine:
         db_uri = database_uri or os.getenv('SQLALCHEMY_DATABASE_URI')
         logger.info(f'Creating engine automatically for {cls.__name__}')
         if not db_uri:
             raise RepositoryError('Cant automatically create an engine, either provide the database uri'
                                   ' or set the SQLALCHEMY_DATABASE_URI environment variable')
         engine = sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'))
-        cls.set_engine(engine)
+        return engine
 
     @classmethod
     def get_engine(cls):
+        if not hasattr(cls, '__engine__'):
+            cls.set_engine(cls._create_engine())
+        @classmethod
+        def get_engine(cls):
+            return cls.__engine__
+        cls.get_engine = get_engine
         return cls.__engine__
 
     @classmethod

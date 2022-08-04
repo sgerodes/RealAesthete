@@ -18,6 +18,6 @@ if __name__ == '__main__':
     # spiders_and_settings.extend(immowelt_run.get_spider_and_settings())
     # utils.run_parallel_spiders_2(spiders_and_settings)
     print(persistence.EbayKleinanzeigenRepository.read_all(id=1))
-    print(persistence.EbayKleinanzeigenRepository.read_all(persistence.EbayKleinanzeigen.id < 3))
-    print(persistence.EbayKleinanzeigen.id)
-    print(type(persistence.EbayKleinanzeigen.id))
+    print(persistence.EbayKleinanzeigenRepository.read_all(persistence.EbayKleinanzeigen.id < 3,
+                                                           persistence.EbayKleinanzeigen.id > 1))
+    print(persistence.ImmonetRepository.read_all(id=1))
