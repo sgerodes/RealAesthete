@@ -2,10 +2,10 @@ import logging
 import sqlalchemy
 import os
 import datetime
-from typing import List, Set, Tuple, TypeVar, Generic, get_args, Optional, Union, Any, FrozenSet
+from typing import List, Set, Tuple, TypeVar, Generic, get_args, Optional, Union, FrozenSet
 from functools import lru_cache
 from .errors import RepositoryError
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.elements import BinaryExpression
 
 # TODO transactions high prio https://docs.sqlalchemy.org/en/14/orm/session_transaction.html
@@ -21,12 +21,12 @@ logger = logging.getLogger(__name__)
 class Repository(Generic[M]):
 
     @classmethod
-    def create_and_set_engine(cls):
-        db_uri = os.getenv('SQLALCHEMY_DATABASE_URI')
-        logger.info(f'Creating engine automatically')
+    def create_and_set_engine(cls, database_uri: str = None):
+        db_uri = database_uri or os.getenv('SQLALCHEMY_DATABASE_URI')
+        logger.info(f'Creating engine automatically for {cls.__name__}')
         if not db_uri:
-            raise RepositoryError('Cant automatically create an engine, because the SQLALCHEMY_DATABASE_URI '
-                                  'environment variable is not set')
+            raise RepositoryError('Cant automatically create an engine, either provide the database uri'
+                                  ' or set the SQLALCHEMY_DATABASE_URI environment variable')
         engine = sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'))
         cls.set_engine(engine)
 
@@ -43,9 +43,8 @@ class Repository(Generic[M]):
     @lru_cache(maxsize=1)
     def _get_model_type(cls):
         model = get_args(cls.__orig_bases__[0])[0]  # noqa
-        for clazz in model.__mro__:
-            if 'sqlalchemy' in str(clazz):
-                return model
+        if 'sqlalchemy' in str(model.__mro__):
+            return model
         raise RepositoryError(f'Provided Model {model} in {cls.__name__} probably is not a sqlalchemy model. '
                               f'MRO of the class is {model.__mro__}')
 
@@ -108,7 +107,7 @@ class Repository(Generic[M]):
                 session.close()
 
     @classmethod
-    def _get_query(cls):
+    def query(cls):
         session = sqlalchemy.orm.Session(bind=cls.get_engine(), expire_on_commit=True)
         return session.query(cls._get_model_type())
 
@@ -122,7 +121,7 @@ class Repository(Generic[M]):
                 # TODO maybe raise an error?
                 logger.warning(f'Tried to query "{cls._get_model_type_name()}" by "{k}",'
                              f' but it is not a member of the class')
-        return cls._get_query().filter(*args).filter_by(**kwargs)
+        return cls.query().filter(*args).filter_by(**kwargs)
 
     # CREATE
     @classmethod
@@ -155,7 +154,7 @@ class Repository(Generic[M]):
             raise RepositoryError(f'You cant read by primary keys using both args and kwargs')
         pks_values = args or kwargs
         logger.debug(f'Reading {cls._get_model_type_name()} with primary keys: {pks_values}')
-        return cls._get_query().get(pks_values)
+        return cls.query().get(pks_values)
 
     @classmethod
     def read_by_unique(cls, *args: Union[BinaryExpression, bool], **kwargs) -> Optional[M]:
