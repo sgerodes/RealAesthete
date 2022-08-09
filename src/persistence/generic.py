@@ -5,7 +5,7 @@ import datetime
 from typing import List, Set, Tuple, TypeVar, Generic, get_args, Optional, Union, FrozenSet
 from functools import lru_cache
 from .errors import RepositoryError
-# from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.elements import BinaryExpression
 
 # TODO transactions high prio https://docs.sqlalchemy.org/en/14/orm/session_transaction.html
@@ -44,6 +44,7 @@ class Repository(Generic[M]):
     def set_engine(cls, engine: sqlalchemy.engine.base.Engine):
         logger.info(f'Engine is set for {cls.__name__} with id {id(engine)}')
         cls.__engine__ = engine
+        cls.__Session__ = sessionmaker(engine)
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -91,15 +92,15 @@ class Repository(Generic[M]):
 
     @classmethod
     def _add_and_commit(cls, entity: M) -> Optional[M]:
-        #with sqlalchemy.orm.Session(bind=persistence.engine, expire_on_commit=True) as session:
-        with sqlalchemy.orm.Session(bind=cls.get_engine()) as session:
+        #with sqlalchemy.orm.Session(bind=cls.get_engine()) as session, session.begin():
+        with cls.__Session__() as session, session.begin():
             try:
                 merged_entity = session.merge(entity)
                 session.add(merged_entity)
                 session.flush()
                 # session.refresh(merged_entity)
                 session.expunge_all()
-                session.commit()
+                # session.commit()
                 return merged_entity
             except (sqlalchemy.exc.IntegrityError,
                     sqlalchemy.exc.ProgrammingError,
@@ -109,8 +110,12 @@ class Repository(Generic[M]):
                 logger.warning(f'Rolling back the db session because of an error')
                 session.rollback()
                 return None
-            finally:
-                session.close()
+            except:
+                logger.warning(f'Rolling back the db session because of an error')
+                session.rollback()
+                raise
+            # finally:
+            #     session.close()
 
     @classmethod
     def query(cls):
@@ -136,10 +141,6 @@ class Repository(Generic[M]):
         if not entity:
             logger.error(f'Tried to create empty object')
             return None
-        if entity.id:
-            logger.error(f'The instance you passing in has already an id. Aborting'
-                         f'Probably tried to create already existing entity: {entity}')
-            return None
         entity = cls._add_and_commit(entity)
         logger.debug(f'Created {cls._get_model_type_name()} {entity}')
         return entity
@@ -164,6 +165,7 @@ class Repository(Generic[M]):
 
     @classmethod
     def read_by_unique(cls, *args: Union[BinaryExpression, bool], **kwargs) -> Optional[M]:
+        # Guarantees that there is not more than one netry for the provided filters
         column_names = set(kwargs.keys())
         if column_names not in cls._get_unique_constraints():
             # logger.warning(f'The column combination {column_names} is not a unique constraint in "{cls._get_model_type_name()}". '
@@ -231,6 +233,7 @@ class Repository(Generic[M]):
     @classmethod
     #@rollback_on_error
     def delete(cls, entity: M) -> M:
+        # TODO this is wrong. It should not be "add"
         entity = cls._add_and_commit(entity)
         logger.debug(f'Deleted {cls._get_model_type_name()} {entity}')
         return entity
