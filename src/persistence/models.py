@@ -19,8 +19,8 @@ class Base(declarative_base()):
 
     @utils.cached_classproperty
     def __tablename__(cls):
-        return cls.__name__
-        # inflection.tableize(cls.__name__)
+        # return cls.__name__
+        return inflection.tableize(cls.__name__)
         # return inflection.underscore(cls.__name__) # TODO use a snake case method later
 
     def __repr__(self):

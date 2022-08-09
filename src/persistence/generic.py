@@ -50,10 +50,10 @@ class Repository(Generic[M]):
     @lru_cache(maxsize=1)
     def _get_model_type(cls):
         model = get_args(cls.__orig_bases__[0])[0]  # noqa
-        if 'sqlalchemy' in str(model.__mro__):
-            return model
-        raise RepositoryError(f'Provided Model {model} in {cls.__name__} probably is not a sqlalchemy model. '
-                              f'MRO of the class is {model.__mro__}')
+        if 'sqlalchemy' not in str(model.__mro__):
+            logger.warning(f'Provided Model {model} in {cls.__name__} probably is not a sqlalchemy model. '
+                                  f'MRO of the class is {model.__mro__}')
+        return model
 
     @classmethod
     @lru_cache(maxsize=1)
