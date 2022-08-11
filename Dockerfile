@@ -5,6 +5,7 @@ FROM real-aesthete-base:latest
 # docker run -e SQLALCHEMY_DATABASE_URI=<db_uri> -e ACTIVATE_SPIDERS=ALL
 # E.g.
 # docker run -e SQLALCHEMY_DATABASE_URI=sqlite:// -e ACTIVATE_SPIDERS=EbayFlatRentSpider -it real-aesthete
+# docker run -e SQLALCHEMY_DATABASE_URI=sqlite:// -e ACTIVATE_SPIDERS=EbayFlatRentSpider -it real-aesthete /bin/bash
 
 # dockerize with:
 # > docker build -t real-aesthete .

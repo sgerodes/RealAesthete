@@ -8,7 +8,7 @@ from fake_useragent import UserAgent
 from src import persistence
 import re
 import datetime
-from typing import List, Callable
+from typing import List, Callable, Optional
 import datetime
 import random
 from ..items import ImmoweltItem
@@ -42,20 +42,26 @@ class ImmoweltSpider:
 
     @staticmethod
     @catch_errors
-    def parse_price(item_css_selector) -> float:
+    def parse_price(item_css_selector) -> Optional[float]:
         text: str = item_css_selector.css('[data-test="price"]::text').get()
+        if text == 'auf Anfrage':
+            return None
         return float(text.replace('€', '').replace('.', '').replace(',', '.').strip())
 
     @staticmethod
     @catch_errors
-    def parse_area(item_css_selector) -> float:
+    def parse_area(item_css_selector) -> Optional[float]:
         text: str = item_css_selector.css('[data-test="area"]::text').get()
+        if not text:
+            return None
         return float(text.replace('m²', '').strip())
 
     @staticmethod
     @catch_errors
-    def parse_rooms(item_css_selector) -> float:
+    def parse_rooms(item_css_selector) -> Optional[float]:
         text: str = item_css_selector.css('[data-test="rooms"]::text').get()
+        if not text:
+            return None
         return float(text.replace('Zi.', '').strip())
 
     @staticmethod

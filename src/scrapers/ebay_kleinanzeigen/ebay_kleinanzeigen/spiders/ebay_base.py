@@ -78,7 +78,7 @@ class EbayKleinanzeigenSpider:
             logger.debug(f'Could not split the postal code and city text into two parts. Got {len(split)}')
             return None, None
         postal_code, city = split
-        city = city.replace('\t', ' ')
+        city = city.replace('\t', ' ').replace('\u200b', '')
         return postal_code, city
 
     @staticmethod

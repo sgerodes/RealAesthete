@@ -5,8 +5,7 @@ from ....headers import get_random_header_set
 from fake_useragent import UserAgent
 import re
 import datetime
-from typing import List, Callable
-
+from typing import List, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -45,13 +44,23 @@ class ImmonetSpider:
     @catch_errors
     def parse_city(text: str):
         # example: 'Etagenwohnung • Coswig '
+        logger.debug(f'parse_city: {text}')
         if text:
-            return text.split('•')[1].strip().replace('\n', '').replace('\r', '')
+            city = text.split('•')[1].strip()\
+                .replace('\n', '')\
+                .replace('\r', '')\
+                .replace('\t\t\t\t\t\t\t', ' ')
+            split = city.split(' ')
+            if len(split) == 2 and split[0] == split[1]:
+                city = split[0]
+            return city
         return None
 
     @staticmethod
     @catch_errors
-    def parse_rooms(text: str):
+    def parse_rooms(text: str) -> Optional[float]:
+        if text is None:
+            return None
         # example: ' 3.5 '
         search = re.compile(r'[\d\.]+').search(text)
         if search:
@@ -61,8 +70,10 @@ class ImmonetSpider:
 
     @staticmethod
     @catch_errors
-    def parse_area(text: str):
+    def parse_area(text: str) -> Optional[float]:
         # example: ' 44 '
+        if not text:
+            return None
         search = re.compile(r'[\d\.]+').search(text)
         if search:
             found = search.group(0)
@@ -86,7 +97,7 @@ class ImmonetSpider:
             item = ImmonetItem()
             item['source_id'] = source_id
             item['price'] = self.parse_price(elem.css("div[id*='selPrice_']").css('.text-nowrap::text').get())
-            item['city'] = self.parse_city(elem.css(".text-100::text").get())
+            item['city'] = self.parse_city(elem.css(".text-100:not(.no-image)::text").get())
             item['rooms'] = self.parse_rooms(elem.css("div[id*='selRooms_']").css('.text-nowrap::text').get())
             item['area'] = self.parse_area(elem.css("div[id*='selArea_']").css('.text-nowrap::text').get())
 
