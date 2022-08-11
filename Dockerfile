@@ -1,5 +1,5 @@
-# FROM real-aesthete-base:latest
-FROM real-aesthete-base-arm:latest
+FROM real-aesthete-base:latest
+# FROM real-aesthete-base-arm:latest
 
 # use with:
 # docker run -e SQLALCHEMY_DATABASE_URI=<db_uri> -e ACTIVATE_SPIDERS=ALL
