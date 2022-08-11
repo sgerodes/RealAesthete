@@ -20,8 +20,8 @@ class Base(declarative_base()):
     @utils.cached_classproperty
     def __tablename__(cls):
         # return cls.__name__
-        return inflection.tableize(cls.__name__)
-        # return inflection.underscore(cls.__name__) # TODO use a snake case method later
+        # return inflection.tableize(cls.__name__)
+        return inflection.underscore(cls.__name__)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id})'
@@ -40,7 +40,7 @@ class EbayKleinanzeigen(EstateBase):
     price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, index=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True)
-    url = sqlalchemy.Column(sqlalchemy.String)
+    # url = sqlalchemy.Column(sqlalchemy.String)
 
     source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, index=True)
     rooms = sqlalchemy.Column(sqlalchemy.Float, index=True)
@@ -49,8 +49,8 @@ class EbayKleinanzeigen(EstateBase):
 
     def get_full_url(self):
         # works both
-        # return 'https://www.ebay-kleinanzeigen.de/s-anzeige/' + self.source_id
-        return 'https://www.ebay-kleinanzeigen.de/' + self.url
+        return 'https://www.ebay-kleinanzeigen.de/s-anzeige/' + self.source_id
+        # return 'https://www.ebay-kleinanzeigen.de/' + self.url
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'

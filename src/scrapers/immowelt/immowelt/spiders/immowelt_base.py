@@ -1,3 +1,5 @@
+import os
+
 import scrapy
 import logging
 from ..items import *
@@ -16,7 +18,6 @@ from scrapy.exceptions import CloseSpider
 logger = logging.getLogger(__name__)
 
 
-
 def catch_errors(func: Callable):
     def wrapper(*args, **kwargs):
         try:
@@ -31,7 +32,7 @@ def catch_errors(func: Callable):
 class ImmoweltSpider:
     BASE_URL = 'https://www.immowelt.de/'
     ABSOLUTE_TIMEDELTA_THRESHOLD = datetime.timedelta(days=7)
-    RANDOM_DECLINE_RATE = 0.4
+    RANDOM_DECLINE_RATE = float(os.getenv('IMMOWELT_SPIDER_RANDOM_DECLINE_RATE', 0.3))
     ONE_DAY_TIMEDELTA = datetime.timedelta(days=1)
 
     @staticmethod

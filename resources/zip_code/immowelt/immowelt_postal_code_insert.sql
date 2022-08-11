@@ -1,4 +1,4 @@
-INSERT INTO ImmoweltPostalCodeStatistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
+INSERT INTO immowelt_postal_code_statistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
 ("01067","RENT","FLAT",0, DATETIME("now")),
 ("01069","RENT","FLAT",0, DATETIME("now")),
 ("01097","RENT","FLAT",0, DATETIME("now")),
@@ -8208,7 +8208,7 @@ INSERT INTO ImmoweltPostalCodeStatistics (postal_code, exposition_type, estate_t
 ("99994","RENT","FLAT",0, DATETIME("now")),
 ("99996","RENT","FLAT",0, DATETIME("now")),
 ("99998","RENT","FLAT",0, DATETIME("now"));
-INSERT INTO ImmoweltPostalCodeStatistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
+INSERT INTO immowelt_postal_code_statistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
 ("01067","BUY","FLAT",0, DATETIME("now")),
 ("01069","BUY","FLAT",0, DATETIME("now")),
 ("01097","BUY","FLAT",0, DATETIME("now")),
@@ -16418,7 +16418,7 @@ INSERT INTO ImmoweltPostalCodeStatistics (postal_code, exposition_type, estate_t
 ("99994","BUY","FLAT",0, DATETIME("now")),
 ("99996","BUY","FLAT",0, DATETIME("now")),
 ("99998","BUY","FLAT",0, DATETIME("now"));
-INSERT INTO ImmoweltPostalCodeStatistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
+INSERT INTO immowelt_postal_code_statistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
 ("01067","RENT","HOUSE",0, DATETIME("now")),
 ("01069","RENT","HOUSE",0, DATETIME("now")),
 ("01097","RENT","HOUSE",0, DATETIME("now")),
@@ -24628,7 +24628,7 @@ INSERT INTO ImmoweltPostalCodeStatistics (postal_code, exposition_type, estate_t
 ("99994","RENT","HOUSE",0, DATETIME("now")),
 ("99996","RENT","HOUSE",0, DATETIME("now")),
 ("99998","RENT","HOUSE",0, DATETIME("now"));
-INSERT INTO ImmoweltPostalCodeStatistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
+INSERT INTO immowelt_postal_code_statistics (postal_code, exposition_type, estate_type, total_entries, created_at) VALUES
 ("01067","BUY","HOUSE",0, DATETIME("now")),
 ("01069","BUY","HOUSE",0, DATETIME("now")),
 ("01097","BUY","HOUSE",0, DATETIME("now")),
