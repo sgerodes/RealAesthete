@@ -1,3 +1,4 @@
+import datetime
 import logging
 import logging.config
 import logging.handlers
@@ -5,6 +6,7 @@ import os
 
 logger = logging.getLogger(__name__)
 DEFAULT_LOG_LEVEL = 'DEBUG'
+LOGS_FOLDER = '.logs'
 
 
 def get_project_log_level():
@@ -30,6 +32,9 @@ def configure_logging():
             'small_fmt': {
                 'format': '[%(levelname)s] %(name)s: %(message)s'
             },
+            'rate_stats_format': {
+                'format': '%(asctime)s | %(message)s'
+            },
             'error_email_fmt': {
                 'format': '[%(levelname)s] %(name)s: %(message)s'
             },
@@ -41,6 +46,13 @@ def configure_logging():
                 'formatter': 'small_fmt',
                 'class': 'logging.StreamHandler',
                 'stream': 'ext://sys.stdout',
+            },
+            'rate_stats_file_handler': {
+                'level': 'DEBUG',
+                'formatter': 'rate_stats_format',
+                'class': 'logging.FileHandler',
+                'filename': f'{LOGS_FOLDER}/rate_stats_{int(datetime.datetime.now().timestamp())}.log',
+                'mode': 'a',
             }
         },
 
@@ -68,6 +80,14 @@ def configure_logging():
             },
         }
     }
+    if os.getenv('ENABLE_RATE_STATS_FILE_LOGGING', '').upper() == 'TRUE':
+        logger.warning('Rate stats file logging is enabled')
+        logger_config = {
+                # file logger for creation and reading rate
+                'level': logging.DEBUG,
+                'handlers': ['rate_stats_file_handler'],
+            }
+        logger_configuration_dict['loggers']['src.scrapers.utils'] = logger_config
 
     logging.config.dictConfig(logger_configuration_dict)
 

@@ -77,6 +77,52 @@ class Immonet(EstateBase):
         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'
 
 
+class AbstractImmonetDetailed(EstateBase):
+    __abstract__ = True
+    #owner_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey(f'{Immonet.__tablename__}.id'), unique=True)
+    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
+    postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True)
+
+    @sqlalchemy.ext.declarative.declared_attr
+    def owner_id(cls):
+        return sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey(f'{Immonet.__tablename__}.id'), unique=True)
+
+
+class ImmonetRentDetailed(AbstractImmonetDetailed):
+    # Miete zzgl. NK
+    cold_rent = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
+    # Miete inkl. NK
+    warm_rent = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
+    # Nebenkosten
+    extra_costs = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
+    # Heizkosten in Nebenkosten enthalten
+    heating_costs_included = sqlalchemy.Column(sqlalchemy.Boolean)
+    # Kaution
+    deposit = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
+    # Baujahr
+    build_year = sqlalchemy.Column(sqlalchemy.Integer)
+    # Verfügbar ab
+    available_from = sqlalchemy.Column(sqlalchemy.Date)
+    # Energieeffizienzklasse
+    energy_efficiency_class = sqlalchemy.Column(sqlalchemy.Enum(enums.EnergyEfficiencyClass), index=True)
+    # Endenergieverbrauch kWh/(m²*a)
+    energy_consumption = sqlalchemy.Column(sqlalchemy.Float)
+    # Etage
+    floor = sqlalchemy.Column(sqlalchemy.Integer)
+    # Balkon
+    balcony = sqlalchemy.Column(sqlalchemy.Boolean)
+    # Keller
+    cellar = sqlalchemy.Column(sqlalchemy.Boolean)
+    # Personenaufzug
+    elevator = sqlalchemy.Column(sqlalchemy.Boolean)
+
+    def get_full_url(self):
+        return 'https://www.immonet.de/angebot/' + self.source_id
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.id} source_id={self.source_id} owner_id={self.owner_id} postal_code={self.postal_code})'
+
+
 class Immowelt(EstateBase):
     source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.Immowelt)
 

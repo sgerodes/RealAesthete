@@ -5,6 +5,7 @@ from ....headers import get_random_header_set
 from fake_useragent import UserAgent
 import re
 import datetime
+from src import persistence
 from typing import List, Callable, Optional
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,6 @@ class ImmonetSpider:
     @catch_errors
     def parse_city(text: str):
         # example: 'Etagenwohnung • Coswig '
-        logger.debug(f'parse_city: {text}')
         if text:
             city = text.split('•')[1].strip()\
                 .replace('\n', '')\
@@ -82,6 +82,18 @@ class ImmonetSpider:
 
     @staticmethod
     @catch_errors
+    def parse_postal_code(text: str) -> Optional[float]:
+        # example: ' 63636&nbsp; Brachttal '
+        if not text:
+            return None
+        search = re.compile(r'\d{5}').search(text)
+        if search:
+            found = search.group(0)
+            return found
+        return None
+
+    @staticmethod
+    @catch_errors
     def parse_item_id(text):
         return text.split('_')[1]
 
@@ -109,6 +121,9 @@ class ImmonetSpider:
                 item['foreclosure'] = self.foreclosure
 
             yield item
+            yield scrapy.Request(f'https://www.immonet.de/angebot/{source_id}',
+                                 callback=self.parse_detailed_page,
+                                 cb_kwargs={'source_id': source_id})
 
         next_page_selector = response.css(next_page_css_selector)
         if next_page_selector:
@@ -119,3 +134,14 @@ class ImmonetSpider:
                 yield scrapy.Request(next_page_url, callback=self.parse)
             else:
                 logger.debug(f'Spider  {self.__class__.__name__}: href not found in the next_page_selector')
+
+    def parse_detailed_page(self, response, source_id: str, **kwargs):
+        logger.debug(f'Scraping detailed {source_id=}')
+        immonet = persistence.ImmonetRepository.read_by_source_id(source_id)
+        if not immonet:
+            logger.error(f'Scrapy detailed page for {source_id=}, but no corresponding db model was found')
+            return None
+
+        postal_code = self.parse_postal_code(response.css('.show').css('.text-100.pull-left::text').get())
+        immonet.postal_code = postal_code
+        persistence.ImmonetRepository.update(immonet)

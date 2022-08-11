@@ -1,7 +1,7 @@
 import logging
 from .generic import Repository
 from typing import Optional
-from .models import EbayKleinanzeigen, Immonet, Immowelt, ImmoweltPostalCodeStatistics
+from .models import EbayKleinanzeigen, Immonet, Immowelt, ImmoweltPostalCodeStatistics, AbstractImmonetDetailed, ImmonetRentDetailed
 from .. import scrapers
 
 
@@ -16,7 +16,7 @@ class EbayKleinanzeigenRepository(Repository[EbayKleinanzeigen]):
 
 class ImmonetRepository(Repository[Immonet]):
     @classmethod
-    def read_by_source_id(cls, source_id: int) -> Optional[Immonet]:
+    def read_by_source_id(cls, source_id: str) -> Optional[Immonet]:
         return cls.read_by_unique(source_id=source_id)
 
 
@@ -50,6 +50,10 @@ class ImmoweltRepository(Repository[Immowelt]):
         ipcs.total_entries = ipcs.total_entries + 1
         ImmoweltPostalCodeStatisticsRepository.update(ipcs)
         return super().create(entity)
+
+
+class ImmonetRentDetailedRepository(Repository[ImmonetRentDetailed]):
+    pass
 
 
 # class ImmoweltPostalCodeRepository(Repository[ImmoweltPostalCode]):
