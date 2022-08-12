@@ -180,7 +180,7 @@ class ImmoweltPostalCodeStatistics(Base):
 
 
 class PersistencePipelineStats(Base):
-    name = sqlalchemy.Column(sqlalchemy.String(20), index=True, nullable=False)
+    name = sqlalchemy.Column(sqlalchemy.String(127), index=True, nullable=False)
     created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
     type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.PersistencePipelineStats), index=True, nullable=False)
     rate = sqlalchemy.Column(sqlalchemy.Integer, nullable=False) # microseconds timedelta
