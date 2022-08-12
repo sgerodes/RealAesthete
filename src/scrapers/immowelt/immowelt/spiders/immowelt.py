@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class ImmoweltFlatRentSpider(ImmoweltSpider, scrapy.Spider):
-    name = 'ImmoweltFlatRentSpider'
     start_urls = [
          "https://www.immowelt.de/liste/{postal_code}/wohnungen/mieten?d=true&sd=DESC&sf=TIMESTAMP&sp={page}",
     ]
@@ -17,7 +16,6 @@ class ImmoweltFlatRentSpider(ImmoweltSpider, scrapy.Spider):
 
 
 class ImmoweltFlatBuySpider(ImmoweltSpider, scrapy.Spider):
-    name = 'ImmoweltFlatBuySpider'
     start_urls = [
         "https://www.immowelt.de/liste/{postal_code}/wohnungen/kaufen?d=true&sd=DESC&sf=TIMESTAMP&sp={page}"
     ]
@@ -26,7 +24,6 @@ class ImmoweltFlatBuySpider(ImmoweltSpider, scrapy.Spider):
 
 
 class ImmoweltHouseRentSpider(ImmoweltSpider, scrapy.Spider):
-    name = 'ImmoweltHouseRentSpider'
     start_urls = [
          "https://www.immowelt.de/liste/{postal_code}/haeuser/mieten?d=true&sd=DESC&sf=TIMESTAMP&sp={page}",
     ]
@@ -35,7 +32,6 @@ class ImmoweltHouseRentSpider(ImmoweltSpider, scrapy.Spider):
 
 
 class ImmoweltHouseBuySpider(ImmoweltSpider, scrapy.Spider):
-    name = 'ImmoweltHouseBuySpider'
     start_urls = [
         "https://www.immowelt.de/liste/{postal_code}/haeuser/kaufen?d=true&sd=DESC&sf=TIMESTAMP&sp={page}"
     ]

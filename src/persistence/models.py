@@ -177,3 +177,19 @@ class ImmoweltPostalCodeStatistics(Base):
         return f'{self.__class__.__name__}({self.id} postal_code={self.postal_code} ' \
                f'exposition_type={self.exposition_type}, estate_type={self.estate_type}, ' \
                f'total_entries={self.total_entries}, last_search={self.last_search})'
+
+
+class PersistencePipelineStats(Base):
+    name = sqlalchemy.Column(sqlalchemy.String(20), index=True, nullable=False)
+    created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
+    type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.PersistencePipelineStats), index=True, nullable=False)
+    rate = sqlalchemy.Column(sqlalchemy.Integer, nullable=False) # microseconds timedelta
+
+    def set_rate_from_timedelta(self, td: datetime.timedelta):
+        self.rate = td.microseconds
+
+    def set_type_reading(self):
+        self.type = scrapers.enums.PersistencePipelineStats.READING
+
+    def set_type_creation(self):
+        self.type = scrapers.enums.PersistencePipelineStats.CREATION

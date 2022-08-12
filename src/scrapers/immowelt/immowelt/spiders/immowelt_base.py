@@ -13,6 +13,7 @@ import datetime
 import random
 from ..items import ImmoweltItem
 from scrapy.exceptions import CloseSpider
+from ....generic import BaseSpider
 
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ def catch_errors(func: Callable):
     return wrapper
 
 
-class ImmoweltSpider:
+class ImmoweltSpider(BaseSpider):
     BASE_URL = 'https://www.immowelt.de/'
     ABSOLUTE_TIMEDELTA_THRESHOLD = datetime.timedelta(days=7)
     RANDOM_DECLINE_RATE = float(os.getenv('IMMOWELT_SPIDER_RANDOM_DECLINE_RATE', 0.3))

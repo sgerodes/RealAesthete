@@ -7,6 +7,7 @@ import re
 import datetime
 from src import persistence
 from typing import List, Callable, Optional
+from ....generic import BaseSpider
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ def catch_errors(func: Callable):
     return wrapper
 
 
-class ImmonetSpider:
+class ImmonetSpider(BaseSpider):
     BASE_URL = 'https://www.immonet.de/'
 
     def start_requests(self):
@@ -130,14 +131,13 @@ class ImmonetSpider:
             logger.error(f'Scrapy detailed page for {source_id=}, but no corresponding db model was found')
             return None
 
-        postal_code = ImmonetDetailedSpider.parse_postal_code(response.css('.show').css('.text-100.pull-left').get())
+        postal_code = ImmonetPostalCodeSpider.parse_postal_code(response.css('.show').css('.text-100.pull-left').get())
         logger.debug(f'updating postal code to {postal_code}')
         immonet.postal_code = postal_code
         persistence.ImmonetRepository.update(immonet)
 
 
-class ImmonetDetailedSpider(scrapy.Spider):
-    name = 'ImmonetDetailedSpider'
+class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
 
     @staticmethod
     @catch_errors

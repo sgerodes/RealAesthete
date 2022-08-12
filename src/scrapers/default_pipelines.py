@@ -6,7 +6,7 @@ from . import utils
 logger = logging.getLogger(__name__)
 
 
-global_stats = utils.PersistencePipelineStats('Global')
+global_stats = utils.PersistencePipelineStatsService('Global')
 
 
 class DefaultPersistencePipeline:
@@ -21,8 +21,8 @@ class DefaultPersistencePipeline:
         if not hasattr(self, 'parser'):
             logger.error(f'You forgot to specify the parser for {self.__class__}')
 
-        self.__class__.class_stats = utils.PersistencePipelineStats(f'{self.__class__.__name__}')
-        self.instance_stats = utils.PersistencePipelineStats(None)
+        self.__class__.class_stats = utils.PersistencePipelineStatsService(f'{self.__class__.__name__}')
+        self.instance_stats = utils.PersistencePipelineStatsService(None)
 
     def process_item(self, item, spider):
         if not self.instance_stats.name:

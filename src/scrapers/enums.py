@@ -9,3 +9,8 @@ class ExpositionType(Enum):
 class EstateType(Enum):
     HOUSE = "HOUSE"
     FLAT = "FLAT"
+
+
+class PersistencePipelineStats(Enum):
+    READING = "READING"
+    CREATION = "CREATION"

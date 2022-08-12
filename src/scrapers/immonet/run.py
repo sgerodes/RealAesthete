@@ -2,7 +2,7 @@ import os
 import logging
 from .immonet.spiders.immonet import ImmonetFlatRentSpider, ImmonetFlatBuySpider, \
     ImmonetHouseRentSpider, ImmonetHouseBuySpider, ImmonetFlatForeclosureSpider, ImmonetHouseForeclosureSpider,\
-    ImmonetDetailedSpider
+    ImmonetPostalCodeSpider
 from .immonet import settings
 from scrapy.utils.project import get_project_settings
 from ..utils import run_parallel_spiders
@@ -20,7 +20,7 @@ def run_spider():
 
 def get_spider_and_settings():
     spiders = (ImmonetFlatRentSpider, ImmonetFlatBuySpider, ImmonetHouseRentSpider, ImmonetHouseBuySpider,
-                   ImmonetFlatForeclosureSpider, ImmonetHouseForeclosureSpider, ImmonetDetailedSpider)
+               ImmonetFlatForeclosureSpider, ImmonetHouseForeclosureSpider, ImmonetPostalCodeSpider)
 
     logger.debug(f'Loading {settings.__name__=}')
     os.environ['SCRAPY_SETTINGS_MODULE'] = settings.__name__

@@ -6,6 +6,7 @@ from fake_useragent import UserAgent
 import re
 import datetime
 from typing import List, Callable
+from ....generic import BaseSpider
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ def catch_errors(func: Callable):
     return wrapper
 
 
-class EbayKleinanzeigenSpider:
+class EbayKleinanzeigenSpider(BaseSpider):
     BASE_URL = 'https://www.ebay-kleinanzeigen.de'
 
     def start_requests(self):
