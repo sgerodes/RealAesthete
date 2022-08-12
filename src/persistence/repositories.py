@@ -1,7 +1,7 @@
 import logging
 from .generic import Repository
 from typing import Optional
-from .models import EbayKleinanzeigen, Immonet, Immowelt, ImmoweltPostalCodeStatistics, AbstractImmonetDetailed, ImmonetRentDetailed
+from .models import EbayKleinanzeigen, Immonet, Immowelt, ImmoweltPostalCodeStatistics
 from .. import scrapers
 
 
@@ -51,9 +51,9 @@ class ImmoweltRepository(Repository[Immowelt]):
         ImmoweltPostalCodeStatisticsRepository.update(ipcs)
         return super().create(entity)
 
-
-class ImmonetRentDetailedRepository(Repository[ImmonetRentDetailed]):
-    pass
+#
+# class ImmonetRentDetailedRepository(Repository[ImmonetRentDetailed]):
+#     pass
 
 
 # class ImmoweltPostalCodeRepository(Repository[ImmoweltPostalCode]):

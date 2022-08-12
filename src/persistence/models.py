@@ -37,7 +37,7 @@ class EbayKleinanzeigen(EstateBase):
 
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True)
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), index=True)
+    price = sqlalchemy.Column(sqlalchemy.Float, index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, index=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True)
     # url = sqlalchemy.Column(sqlalchemy.String)
@@ -61,7 +61,7 @@ class Immonet(EstateBase):
 
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), nullable=True, index=True)
+    price = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True) # cant get postal code from the search page
 
@@ -88,40 +88,40 @@ class AbstractImmonetDetailed(EstateBase):
     def owner_id(cls):
         return sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey(f'{Immonet.__tablename__}.id'), unique=True)
 
-
-class ImmonetRentDetailed(AbstractImmonetDetailed):
-    # Miete zzgl. NK
-    cold_rent = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
-    # Miete inkl. NK
-    warm_rent = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
-    # Nebenkosten
-    extra_costs = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
-    # Heizkosten in Nebenkosten enthalten
-    heating_costs_included = sqlalchemy.Column(sqlalchemy.Boolean)
-    # Kaution
-    deposit = sqlalchemy.Column(sqlalchemy.Numeric(precision=2))
-    # Baujahr
-    build_year = sqlalchemy.Column(sqlalchemy.Integer)
-    # Verfügbar ab
-    available_from = sqlalchemy.Column(sqlalchemy.Date)
-    # Energieeffizienzklasse
-    energy_efficiency_class = sqlalchemy.Column(sqlalchemy.Enum(enums.EnergyEfficiencyClass), index=True)
-    # Endenergieverbrauch kWh/(m²*a)
-    energy_consumption = sqlalchemy.Column(sqlalchemy.Float)
-    # Etage
-    floor = sqlalchemy.Column(sqlalchemy.Integer)
-    # Balkon
-    balcony = sqlalchemy.Column(sqlalchemy.Boolean)
-    # Keller
-    cellar = sqlalchemy.Column(sqlalchemy.Boolean)
-    # Personenaufzug
-    elevator = sqlalchemy.Column(sqlalchemy.Boolean)
-
-    def get_full_url(self):
-        return 'https://www.immonet.de/angebot/' + self.source_id
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self.id} source_id={self.source_id} owner_id={self.owner_id} postal_code={self.postal_code})'
+#
+# class ImmonetRentDetailed(AbstractImmonetDetailed):
+#     # Miete zzgl. NK
+#     cold_rent = sqlalchemy.Column(sqlalchemy.Float)
+#     # Miete inkl. NK
+#     warm_rent = sqlalchemy.Column(sqlalchemy.Float)
+#     # Nebenkosten
+#     extra_costs = sqlalchemy.Column(sqlalchemy.Float)
+#     # Heizkosten in Nebenkosten enthalten
+#     heating_costs_included = sqlalchemy.Column(sqlalchemy.Boolean)
+#     # Kaution
+#     deposit = sqlalchemy.Column(sqlalchemy.Float)
+#     # Baujahr
+#     build_year = sqlalchemy.Column(sqlalchemy.Integer)
+#     # Verfügbar ab
+#     available_from = sqlalchemy.Column(sqlalchemy.Date)
+#     # Energieeffizienzklasse
+#     energy_efficiency_class = sqlalchemy.Column(sqlalchemy.Enum(enums.EnergyEfficiencyClass), index=True)
+#     # Endenergieverbrauch kWh/(m²*a)
+#     energy_consumption = sqlalchemy.Column(sqlalchemy.Float)
+#     # Etage
+#     floor = sqlalchemy.Column(sqlalchemy.Integer)
+#     # Balkon
+#     balcony = sqlalchemy.Column(sqlalchemy.Boolean)
+#     # Keller
+#     cellar = sqlalchemy.Column(sqlalchemy.Boolean)
+#     # Personenaufzug
+#     elevator = sqlalchemy.Column(sqlalchemy.Boolean)
+#
+#     def get_full_url(self):
+#         return 'https://www.immonet.de/angebot/' + self.source_id
+#
+#     def __repr__(self):
+#         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} owner_id={self.owner_id} postal_code={self.postal_code})'
 
 
 class Immowelt(EstateBase):
@@ -129,7 +129,7 @@ class Immowelt(EstateBase):
 
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
-    price = sqlalchemy.Column(sqlalchemy.Numeric(precision=2), nullable=True, index=True)
+    price = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True)
 
