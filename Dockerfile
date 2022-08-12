@@ -2,7 +2,8 @@ FROM real-aesthete-base:latest
 # FROM real-aesthete-base-arm:latest
 
 # use with:
-# docker run -e SQLALCHEMY_DATABASE_URI=<db_uri> -e ACTIVATE_SPIDERS=ALL
+# docker run -e SQLALCHEMY_DATABASE_URI=<db_uri> -e ACTIVATE_SPIDERS=ALL real-aesthete
+# docker run -e SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@raspberrypisdextremeplus:5432/postgres -e ACTIVATE_SPIDERS=EbayFlatRentSpider -e IMMOWELT_SPIDER_RANDOM_DECLINE_RATE=0.5 -it real-aesthete
 # E.g.
 # docker run -e SQLALCHEMY_DATABASE_URI=sqlite:// -e ACTIVATE_SPIDERS=EbayFlatRentSpider -it real-aesthete
 # docker run -e SQLALCHEMY_DATABASE_URI=sqlite:// -e ACTIVATE_SPIDERS=EbayFlatRentSpider -it real-aesthete /bin/bash

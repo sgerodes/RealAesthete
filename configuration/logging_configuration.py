@@ -46,13 +46,6 @@ def configure_logging():
                 'formatter': 'small_fmt',
                 'class': 'logging.StreamHandler',
                 'stream': 'ext://sys.stdout',
-            },
-            'rate_stats_file_handler': {
-                'level': 'DEBUG',
-                'formatter': 'rate_stats_format',
-                'class': 'logging.FileHandler',
-                'filename': f'{LOGS_FOLDER}/rate_stats_{int(datetime.datetime.now().timestamp())}.log',
-                'mode': 'a',
             }
         },
 
@@ -87,6 +80,14 @@ def configure_logging():
                 'level': logging.DEBUG,
                 'handlers': ['rate_stats_file_handler'],
             }
+        handler_config = {
+                'level': 'DEBUG',
+                'formatter': 'rate_stats_format',
+                'class': 'logging.FileHandler',
+                'filename': f'{LOGS_FOLDER}/rate_stats_{int(datetime.datetime.now().timestamp())}.log',
+                'mode': 'a',
+            }
+        logger_configuration_dict['handlers']['rate_stats_file_handler'] = handler_config
         logger_configuration_dict['loggers']['src.scrapers.utils'] = logger_config
 
     logging.config.dictConfig(logger_configuration_dict)

@@ -1,6 +1,6 @@
 import scrapy
 import logging
-from .immonet_base import ImmonetSpider
+from .immonet_base import ImmonetSpider, ImmonetDetailedSpider
 from ....enums import ExpositionType, EstateType
 
 
@@ -62,5 +62,3 @@ class ImmonetHouseForeclosureSpider(ImmonetSpider, scrapy.Spider):
     estate_type = EstateType.HOUSE
     exposition_type = ExpositionType.BUY
     foreclosure = True
-
-

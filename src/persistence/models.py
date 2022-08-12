@@ -74,7 +74,8 @@ class Immonet(EstateBase):
         return 'https://www.immonet.de/angebot/' + self.source_id
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'
+        return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area} ' \
+               f'postal_code={self.postal_code})'
 
 
 class AbstractImmonetDetailed(EstateBase):

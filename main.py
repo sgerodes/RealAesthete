@@ -17,3 +17,4 @@ if __name__ == '__main__':
     spiders_and_settings.extend(immonet_run.get_spider_and_settings())
     spiders_and_settings.extend(immowelt_run.get_spider_and_settings())
     utils.run_parallel_spiders_2(spiders_and_settings)
+    #print(persistence.ImmonetRepository.read_all(postal_code=None))

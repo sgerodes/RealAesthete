@@ -72,8 +72,6 @@ class ImmoweltSpider:
 
     def start_requests(self):
         ua = UserAgent()
-        headers = {} # get_random_header_set()
-        headers["User-Agent"] = ua.random
         # all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
         #                                                                   exposition_type=self.exposition_type)
         all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
@@ -102,6 +100,8 @@ class ImmoweltSpider:
                 should_search = True
 
             if should_search:
+                headers = {} # get_random_header_set()
+                headers["User-Agent"] = ua.random
                 url = self.start_urls[0].format(postal_code=ipcs.postal_code, page=1)
                 yield scrapy.http.Request(url, headers=headers, cb_kwargs={'postal_code': ipcs.postal_code, 'page': 1})
             else:
