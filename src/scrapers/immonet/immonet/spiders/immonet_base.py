@@ -145,7 +145,7 @@ class AbstractImmonetForeclosureSpider(ImmonetSpider):
                 if db_entity:
                     db_entity.foreclosure = super_response.foreclosure
                     persistence.ImmonetRepository.update(db_entity)
-                    yield None
+                    continue
             yield super_response
 
 
