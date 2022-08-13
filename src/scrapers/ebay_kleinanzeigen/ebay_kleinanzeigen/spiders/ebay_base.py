@@ -100,6 +100,7 @@ class EbayKleinanzeigenSpider(BaseSpider):
             t = datetime.time.fromisoformat(t_str)
             return datetime.datetime.combine(d, t)
         else:
+            # TODO change- wrong format. is '05-08-2022', datetime expects YYYY-MM-DDTHH:MM:SS. mmmmmm
             return datetime.date.fromisoformat(text.replace(".", "-"))
 
     @staticmethod

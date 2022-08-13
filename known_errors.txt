@@ -1,0 +1,11 @@
+Ebay House Rent
+
+[ERROR] src.scrapers.ebay_kleinanzeigen.ebay_kleinanzeigen.spiders.ebay_base: Invalid isoformat string: '05-08-2022'
+Traceback (most recent call last):
+  File "/app/src/scrapers/ebay_kleinanzeigen/ebay_kleinanzeigen/spiders/ebay_base.py", line 18, in wrapper
+    return func(*args, **kwargs)
+  File "/app/src/scrapers/ebay_kleinanzeigen/ebay_kleinanzeigen/spiders/ebay_base.py", line 103, in parse_online_since
+    return datetime.date.fromisoformat(text.replace(".", "-"))
+ValueError: Invalid isoformat string: '05-08-2022'
+
+

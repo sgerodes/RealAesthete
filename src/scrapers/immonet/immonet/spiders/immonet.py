@@ -1,6 +1,6 @@
 import scrapy
 import logging
-from .immonet_base import ImmonetSpider, ImmonetPostalCodeSpider
+from .immonet_base import ImmonetSpider, ImmonetPostalCodeSpider, AbstractImmonetForeclosureSpider
 from ....enums import ExpositionType, EstateType
 
 
@@ -40,7 +40,7 @@ class ImmonetHouseBuySpider(ImmonetSpider, scrapy.Spider):
 
 
 # Foreclosure == Zwangsversteigerung
-class ImmonetFlatForeclosureSpider(ImmonetSpider, scrapy.Spider):
+class ImmonetFlatForeclosureSpider(AbstractImmonetForeclosureSpider, scrapy.Spider):
     start_urls = [
         "https://www.immonet.de/immobiliensuche/sel.do?pageoffset=1&objecttype=1&listsize=26&locationname=&acid=&actype=&ajaxIsRadiusActive=true&sortby=19&suchart=1&radius=0&pcatmtypes=1_6&pCatMTypeStoragefield=2_6&parentcat=1&marketingtype=6&fromprice=&toprice=&fromarea=&toarea=&fromrooms=&torooms=&wbs=-1&fromyear=&toyear=&fulltext=&absenden=Ergebnisse+anzeigen"
     ]
@@ -49,7 +49,7 @@ class ImmonetFlatForeclosureSpider(ImmonetSpider, scrapy.Spider):
     foreclosure = True
 
 
-class ImmonetHouseForeclosureSpider(ImmonetSpider, scrapy.Spider):
+class ImmonetHouseForeclosureSpider(AbstractImmonetForeclosureSpider, scrapy.Spider):
     start_urls = [
         "https://www.immonet.de/immobiliensuche/sel.do?pageoffset=1&objecttype=1&listsize=26&locationname=&acid=&actype=&ajaxIsRadiusActive=true&sortby=19&suchart=1&radius=0&pcatmtypes=2_6&pCatMTypeStoragefield=2_1&parentcat=2&marketingtype=6&fromprice=&toprice=&fromarea=&toarea=&fromplotarea=&toplotarea=&fromrooms=&torooms=&wbs=-1&fromyear=&toyear=&fulltext=&absenden=Ergebnisse+anzeigen"
     ]

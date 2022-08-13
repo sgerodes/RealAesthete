@@ -137,6 +137,18 @@ class ImmonetSpider(BaseSpider):
         persistence.ImmonetRepository.update(immonet)
 
 
+class AbstractImmonetForeclosureSpider(ImmonetSpider):
+    def parse(self, *args, **kwargs):
+        for super_response in super().parse(*args, **kwargs):
+            if isinstance(super_response, ImmonetItem):
+                db_entity = persistence.ImmonetRepository.read_by_source_id(super_response.source_id)
+                if db_entity:
+                    db_entity.foreclosure = super_response.foreclosure
+                    persistence.ImmonetRepository.update(db_entity)
+                    yield None
+            yield super_response
+
+
 class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
 
     @staticmethod

@@ -52,5 +52,5 @@ class DefaultPersistencePipeline:
         if self.duplicates_score > self.DUPLICATES_THRESHOLD:
             logger.debug(
                 f'Duplicate count hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider. {estate_type}, {exposition_type}')
-            spider.crawler.engine.close_spider(self, reason='to many duplicates')
+            spider.crawler.engine.close_spider(self, reason=f'to many duplicates {spider.name}')
         return item
