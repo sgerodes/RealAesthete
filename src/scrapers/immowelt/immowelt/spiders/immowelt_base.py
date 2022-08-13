@@ -80,8 +80,7 @@ class ImmoweltSpider(BaseSpider):
     def start_requests(self):
         ua = UserAgent()
         all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
-                                                                          exposition_type=self.exposition_type,
-                                                                          postal_code='09130') # TODO debug code, delete
+                                                                          exposition_type=self.exposition_type)
         random.shuffle(all)
         for ipcs in all:
             should_search = False
@@ -105,7 +104,6 @@ class ImmoweltSpider(BaseSpider):
                 logger.debug('Will crawl, because of frequency')
                 should_search = True
 
-            should_search = True # TODO delete
             if should_search:
                 headers = {} # get_random_header_set()
                 headers["User-Agent"] = ua.random
