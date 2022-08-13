@@ -36,6 +36,12 @@ class ImmoweltSpider(BaseSpider):
     RANDOM_DECLINE_RATE = float(os.getenv('IMMOWELT_SPIDER_RANDOM_DECLINE_RATE', 0.3))
     ONE_DAY_TIMEDELTA = datetime.timedelta(days=1)
 
+    def __init__(self):
+        self.postal_codes_to_stop_searching = set()
+
+    def stop_searching_on_postal_code(self, postal_code: str):
+        self.postal_codes_to_stop_searching.add(postal_code)
+
     @staticmethod
     @catch_errors
     def parse_source_id(item_css_selector):
@@ -73,10 +79,9 @@ class ImmoweltSpider(BaseSpider):
 
     def start_requests(self):
         ua = UserAgent()
-        # all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
-        #                                                                   exposition_type=self.exposition_type)
         all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
-                                                                          exposition_type=self.exposition_type)
+                                                                          exposition_type=self.exposition_type,
+                                                                          postal_code='09130') # TODO debug code, delete
         random.shuffle(all)
         for ipcs in all:
             should_search = False
@@ -100,6 +105,7 @@ class ImmoweltSpider(BaseSpider):
                 logger.debug('Will crawl, because of frequency')
                 should_search = True
 
+            should_search = True # TODO delete
             if should_search:
                 headers = {} # get_random_header_set()
                 headers["User-Agent"] = ua.random
@@ -127,7 +133,8 @@ class ImmoweltSpider(BaseSpider):
             persistence.ImmoweltPostalCodeStatisticsRepository.update(ipcs)
         else:
             logger.error(f'No body tag. We are probably blocked. response.body={response.body}')
-            CloseSpider('No body tag. We are probably blocked.')
+            # spider.crawler.engine.close_spider(self, reason=f'to many duplicates {spider.name}')
+            raise CloseSpider('No body tag. We are probably blocked.')
 
         for elem in elements_selector:
             item = ImmoweltItem()
@@ -144,9 +151,13 @@ class ImmoweltSpider(BaseSpider):
             yield item
 
         if len(elements_selector) != 0:
-            new_page = page + 1
-            next_page_url = self.start_urls[0].format(postal_code=postal_code, page=new_page)
-            logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
-            yield scrapy.Request(next_page_url, callback=self.parse, cb_kwargs={'postal_code': postal_code, 'page': new_page})
+            if postal_code not in self.postal_codes_to_stop_searching:
+                new_page = page + 1
+                next_page_url = self.start_urls[0].format(postal_code=postal_code, page=new_page)
+                logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
+                yield scrapy.Request(next_page_url, callback=self.parse, cb_kwargs={'postal_code': postal_code, 'page': new_page})
+            else:
+                logger.debug(f'Stopping searching on {postal_code=}')
+
         else:
             logger.debug('No elements found on the page')
