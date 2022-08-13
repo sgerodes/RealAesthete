@@ -27,7 +27,7 @@ def run_parallel_spiders_2(spiders_and_settings: List[Tuple[scrapy.spiders.Spide
         logger.warning('ACTIVATE_SPIDERS env variable is not set. Will not crawl')
         return
 
-    activate_spiders_set = set(activate_spiders.split(','))
+    activate_spiders_set = set(name.strip() for name in activate_spiders.split(','))
     logger.debug(f'Will activate spiders: {activate_spiders}')
     spiders_to_activate = list()
     for s in spiders_and_settings:
