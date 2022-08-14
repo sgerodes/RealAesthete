@@ -11,3 +11,4 @@ class ImmoweltPersistencePipeline(DefaultPersistencePipeline):
 
     def on_too_many_duplicates(self, item: ImmoweltItem, spider: ImmoweltSpider):
         spider.stop_searching_on_postal_code(item.postal_code)
+        self.duplicates_score = 0

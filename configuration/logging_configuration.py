@@ -43,7 +43,7 @@ def configure_logging():
         'handlers': {
             'default': {
                 'level': project_log_level,
-                'formatter': 'small_fmt',
+                'formatter': 'default_fmt',
                 'class': 'logging.StreamHandler',
                 'stream': 'ext://sys.stdout',
             }

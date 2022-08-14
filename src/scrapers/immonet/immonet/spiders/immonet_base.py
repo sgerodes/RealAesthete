@@ -139,12 +139,18 @@ class ImmonetSpider(BaseSpider):
 
 class AbstractImmonetForeclosureSpider(ImmonetSpider):
     def parse(self, *args, **kwargs):
+        duplicates = 0
         for super_response in super().parse(*args, **kwargs):
             if isinstance(super_response, ImmonetItem):
                 db_entity = persistence.ImmonetRepository.read_by_source_id(super_response.source_id)
                 if db_entity:
-                    db_entity.foreclosure = super_response.foreclosure
-                    persistence.ImmonetRepository.update(db_entity)
+                    if db_entity.foreclosure is None:
+                        db_entity.foreclosure = super_response.foreclosure
+                        persistence.ImmonetRepository.update(db_entity)
+                    else:
+                        duplicates += 1
+                        if duplicates >= 15:
+                            self.crawler.engine.close_spider(self, reason=f'to many duplicates {self.name}')
                     continue
             yield super_response
 
