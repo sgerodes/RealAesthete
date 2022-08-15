@@ -9,15 +9,3 @@ Traceback (most recent call last):
 ValueError: Invalid isoformat string: '05-08-2022'
 
 
-
-
-#
-
-7 | 2022-08-15 09:54:44,450 [WARNING] src.scrapers.immonet.immonet.spiders.immonet_base: Found more than one postal code: <p class="text-100 pull-left">
-						Roseggerstr. 38, 12059 Berlin<br>
-
-						12059
-						Berlin
-
-						<br><a id="tsr-int-map-anchor-xs-link" class="hidden-print" href="#">Auf Karte anzeigen</a>
-					</p>
