@@ -7,7 +7,7 @@ from ....enums import ExpositionType, EstateType
 logger = logging.getLogger(__name__)
 
 
-class ImmoweltFlatRentSpider(ImmoweltSpider, scrapy.Spider):
+class ImmoweltFlatRentSpider(ImmoweltSpider):
     start_urls = [
          "https://www.immowelt.de/liste/{postal_code}/wohnungen/mieten?d=true&sd=DESC&sf=TIMESTAMP&sp={page}",
     ]
@@ -15,7 +15,7 @@ class ImmoweltFlatRentSpider(ImmoweltSpider, scrapy.Spider):
     exposition_type = ExpositionType.RENT
 
 
-class ImmoweltFlatBuySpider(ImmoweltSpider, scrapy.Spider):
+class ImmoweltFlatBuySpider(ImmoweltSpider):
     start_urls = [
         "https://www.immowelt.de/liste/{postal_code}/wohnungen/kaufen?d=true&sd=DESC&sf=TIMESTAMP&sp={page}"
     ]
@@ -23,7 +23,7 @@ class ImmoweltFlatBuySpider(ImmoweltSpider, scrapy.Spider):
     exposition_type = ExpositionType.BUY
 
 
-class ImmoweltHouseRentSpider(ImmoweltSpider, scrapy.Spider):
+class ImmoweltHouseRentSpider(ImmoweltSpider):
     start_urls = [
          "https://www.immowelt.de/liste/{postal_code}/haeuser/mieten?d=true&sd=DESC&sf=TIMESTAMP&sp={page}",
     ]
@@ -31,7 +31,7 @@ class ImmoweltHouseRentSpider(ImmoweltSpider, scrapy.Spider):
     exposition_type = ExpositionType.RENT
 
 
-class ImmoweltHouseBuySpider(ImmoweltSpider, scrapy.Spider):
+class ImmoweltHouseBuySpider(ImmoweltSpider):
     start_urls = [
         "https://www.immowelt.de/liste/{postal_code}/haeuser/kaufen?d=true&sd=DESC&sf=TIMESTAMP&sp={page}"
     ]

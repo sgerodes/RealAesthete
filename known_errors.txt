@@ -9,3 +9,23 @@ Traceback (most recent call last):
 ValueError: Invalid isoformat string: '05-08-2022'
 
 
+7 | 2022-08-15 11:08:35,219 [ERROR] src.scrapers.immowelt.immowelt.spiders.immowelt_base: could not convert string to float: '530000 CHF'
+Traceback (most recent call last):
+  File "/app/src/scrapers/immowelt/immowelt/spiders/immowelt_base.py", line 25, in wrapper
+    return func(*args, **kwargs)
+  File "/app/src/scrapers/immowelt/immowelt/spiders/immowelt_base.py", line 56, in parse_price
+    return float(text.replace('€', '').replace('.', '').replace(',', '.').strip())
+ValueError: could not convert string to float: '530000 CHF'
+
+
+
+
+# 12 Aug : ImmonetHouseBuySpider stopped at page 1326 / 2500
+# with error twisted.internet.error.DNSLookupError: DNS lookup failed: no results for hostname lookup: www.immonet.de.
+# https://github.com/scrapy/scrapy/issues/4888
+#
+
+
+# 13 AUG
+# sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00 (Background on this error at: https://sqlalche.me/e/14/3o7r)
+#
