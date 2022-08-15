@@ -12,17 +12,26 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
+    e_count = persistence.EbayKleinanzeigenRepository.count()
+    in_count = persistence.ImmonetRepository.count()
+    iw_count = persistence.ImmoweltRepository.count()
+    total_count = e_count + in_count + iw_count
+    logger.info(f'DB has {e_count} EbayKleinanzeigen entries')
+    logger.info(f'DB has {in_count} Immonet entries')
+    logger.info(f'DB has {iw_count} Immowelt entries')
+    logger.info(f'DB has a total of {total_count} entries ')
+
     spiders_and_settings = list()
     spiders_and_settings.extend(ebay_kleinanzeigen_run.get_spider_and_settings())
     spiders_and_settings.extend(immonet_run.get_spider_and_settings())
     spiders_and_settings.extend(immowelt_run.get_spider_and_settings())
     utils.run_parallel_spiders_2(spiders_and_settings)
-    # print(len(persistence.ImmoweltPostalCodeStatisticsRepository.read_all(exposition_type="BUY", estate_type="FLAT", last_search=None)))
-    # print(len(persistence.ImmoweltPostalCodeStatisticsRepository.read_all(persistence.ImmoweltPostalCodeStatistics.last_search != None,
-    #                                                                       persistence.ImmoweltPostalCodeStatistics.total_entries != 0,
-    #                                                                       exposition_type="BUY",
-    #                                                                       estate_type="FLAT")))
-    # print(len(persistence.ImmoweltPostalCodeStatisticsRepository.read_all(persistence.ImmoweltPostalCodeStatistics.last_search != None,
-    #                                                                       persistence.ImmoweltPostalCodeStatistics.total_entries == 0,
-    #                                                                       exposition_type="BUY",
-    #                                                                       estate_type="FLAT")))
+
+    e_count_after = persistence.EbayKleinanzeigenRepository.count()
+    in_count_after = persistence.ImmonetRepository.count()
+    iw_count_after = persistence.ImmoweltRepository.count()
+    total_count_after = e_count_after + in_count_after + iw_count_after
+    logger.info(f'DB has {e_count_after} EbayKleinanzeigen entries. New {e_count_after - e_count}')
+    logger.info(f'DB has {in_count_after} Immonet entries. New {in_count_after - in_count}')
+    logger.info(f'DB has {iw_count_after} Immowelt entries. New {iw_count_after - iw_count}')
+    logger.info(f'DB has a total of {total_count_after} entries. New {total_count_after - total_count}')

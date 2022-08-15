@@ -9,6 +9,7 @@ from src import persistence
 from typing import List, Callable, Optional
 from ....generic import BaseSpider
 
+
 logger = logging.getLogger(__name__)
 
 

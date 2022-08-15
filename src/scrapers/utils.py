@@ -87,3 +87,19 @@ class cached_classproperty:  # noqa
         val = self.fget(owner_cls)
         setattr(owner_cls, self.fget.__name__, val)
         return val
+
+
+class classproperty:
+    """
+    https://github.com/hottwaj/classproperties/blob/main/classproperties
+    Decorator for a Class-level property.  Credit to Denis Rhyzhkov on Stackoverflow: https://stackoverflow.com/a/13624858/1280629
+    """
+    def __init__(self, fget, cached=False):
+        self.fget = fget
+        self.cached=cached
+
+    def __get__(self, owner_self, owner_cls):
+        val = self.fget(owner_cls)
+        if self.cached:
+            setattr(owner_cls, self.fget.__name__, val)
+        return val

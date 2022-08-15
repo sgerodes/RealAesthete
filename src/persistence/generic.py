@@ -207,6 +207,12 @@ class Repository(Generic[M]):
         logger.debug(f'Checking existence of {cls._get_model_type_name()} with filters {kwargs}')
         return cls._get_filtered_query(*args, **kwargs).first() is not None
 
+    @classmethod
+    def count(cls, *args: Union[BinaryExpression, bool], **kwargs) -> int:
+        logger.debug(f'Counting {cls._get_model_type_name()}')
+        return cls._get_filtered_query(*args, **kwargs).count()
+
+
     # @classmethod
     # def distinct(cls, **kwargs) -> Optional[List[Any]]:
     #     pass # TODO

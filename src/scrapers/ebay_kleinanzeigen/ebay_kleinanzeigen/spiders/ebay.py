@@ -7,7 +7,7 @@ from ....enums import ExpositionType, EstateType
 logger = logging.getLogger(__name__)
 
 
-class EbayFlatRentSpider(EbayKleinanzeigenSpider, scrapy.Spider):
+class EbayFlatRentSpider(EbayKleinanzeigenSpider):
     start_urls = [
          "https://www.ebay-kleinanzeigen.de/s-wohnung-mieten/anzeige:angebote/seite:1/c203",
     ]
@@ -15,7 +15,7 @@ class EbayFlatRentSpider(EbayKleinanzeigenSpider, scrapy.Spider):
     exposition_type = ExpositionType.RENT
 
 
-class EbayFlatBuySpider(EbayKleinanzeigenSpider, scrapy.Spider):
+class EbayFlatBuySpider(EbayKleinanzeigenSpider):
     start_urls = [
         "https://www.ebay-kleinanzeigen.de/s-wohnung-kaufen/anzeige:angebote/c196"
     ]
