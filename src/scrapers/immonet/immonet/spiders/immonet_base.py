@@ -111,9 +111,9 @@ class ImmonetSpider(BaseSpider):
                 item['foreclosure'] = self.foreclosure
 
             yield item
-            # yield scrapy.Request(f'https://www.immonet.de/angebot/{source_id}',
-            #                      callback=self.parse_detailed_page,
-            #                      cb_kwargs={'source_id': source_id})
+            yield scrapy.Request(f'https://www.immonet.de/angebot/{source_id}',
+                                 callback=self.parse_detailed_page,
+                                 cb_kwargs={'source_id': source_id})
 
         next_page_selector = response.css(next_page_css_selector)
         if next_page_selector:
@@ -132,10 +132,10 @@ class ImmonetSpider(BaseSpider):
             logger.error(f'Scrapy detailed page for {source_id=}, but no corresponding db model was found')
             return None
 
-        postal_code = ImmonetPostalCodeSpider.parse_postal_code(response.css('.show').css('.text-100.pull-left').get())
-        logger.debug(f'updating postal code to {postal_code}')
-        immonet.postal_code = postal_code
-        persistence.ImmonetRepository.update(immonet)
+        postal_code = ImmonetPostalCodeSpider.parse_postal_code(response.css('.show').css('.text-100.pull-left').get(), source_id)
+        if postal_code:
+            immonet.postal_code = postal_code
+            persistence.ImmonetRepository.update(immonet)
 
 
 class AbstractImmonetForeclosureSpider(ImmonetSpider):
@@ -160,7 +160,7 @@ class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
 
     @staticmethod
     @catch_errors
-    def parse_postal_code(text_with_html: str) -> Optional[str]:
+    def parse_postal_code(text_with_html: str, source_id: str) -> Optional[str]:
         # example: ' 63636&nbsp; Brachttal '
         if not text_with_html:
             return None
@@ -168,7 +168,11 @@ class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
         if not findall:
             return None
         if len(findall) > 1:
-            logger.warning(f'Found more than one postal code: {text_with_html}')
+            first = findall[0]
+            for candidate in findall:
+                if candidate != first:
+                    logger.warning(f'Found more than one postal code candidates for {source_id=}: {text_with_html}')
+                    return None
         return findall[0]
 
     def start_requests(self):
@@ -183,7 +187,7 @@ class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
 
     def parse(self, response, immonet_model: persistence.Immonet, **kwargs):
         logger.debug(f'Scraping detailed {immonet_model.source_id=}')
-        postal_code = self.parse_postal_code(response.css('.show').css('.text-100.pull-left').get())
+        postal_code = self.parse_postal_code(response.css('.show').css('.text-100.pull-left').get(), immonet_model.source_id)
         if not postal_code:
             logger.warning(f'Could not find the postal code for {immonet_model}')
         # logger.debug(f'updating postal code to {postal_code}')
