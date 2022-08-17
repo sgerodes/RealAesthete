@@ -1,5 +1,7 @@
 from . import spiders
 from . import pipelines
+from configuration.scrapy_configuration import EbayKleinanzeigenScrapingConfig as Config
+
 # Scrapy settings for ebay_kleinanzeigen project
 #
 # For simplicity, this file contains only settings considered important or
@@ -27,6 +29,7 @@ ITEM_PIPELINES = {
 #ROTATING_PROXY_LIST = proxies.proxies
 # ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scraper\ebay_kleinanzeigen\ebay_kleinanzeigen\free-proxy-list_net.proxies'
 ROTATING_PROXY_LIST_PATH = r'C:\Users\sgero\PycharmProjects\RealAesthete\src\scraper\ebay_kleinanzeigen\ebay_kleinanzeigen\good_proxy.txt'
+DOWNLOAD_DELAY = Config.DOWNLOAD_DELAY
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'ebay_kleinanzeigen (+http://www.yourdomain.com)'

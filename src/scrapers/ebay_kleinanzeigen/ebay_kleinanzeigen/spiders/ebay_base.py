@@ -99,12 +99,14 @@ class EbayKleinanzeigenSpider(BaseSpider):
                 item['area'] = EbayKleinanzeigenSpider.parse_area(tag)
 
     def parse(self, response, **kwargs):
+        self.logger.debug(f'Scalping {response.request.url}')
+
         css_index_selector = '.aditem'
         next_page_css_selector = '.pagination-next'
 
         for elem in response.css(css_index_selector):
             source_id = elem.xpath("@data-adid").get()
-            self.logger.debug(f'processing item with source_id={source_id}')
+            # self.logger.debug(f'processing item with source_id={source_id}')
 
             item = EbayKleinanzeigenItem()
             item.source_id = source_id
@@ -126,7 +128,6 @@ class EbayKleinanzeigenSpider(BaseSpider):
             href = next_page_selector.xpath('@href').get()
             if href:
                 next_page_url = f'{Config.BASE_URL}{href}'
-                self.logger.debug(f'going to the next page {next_page_url}')
                 yield scrapy.Request(next_page_url, callback=self.parse, headers=self.get_headers())
             else:
                 self.logger.debug(f'href not found in the next_page_selector')

@@ -8,6 +8,7 @@ class SharedSpiderConfig:
 
 class EbayKleinanzeigenScrapingConfig:
     BASE_URL = 'https://www.ebay-kleinanzeigen.de'
+    DOWNLOAD_DELAY = 10.0 if os.getenv('EBAY_DOWNLOAD_DELAY', None) is None else float(os.getenv('EBAY_DOWNLOAD_DELAY'))
 
 
 class ImmonetScrapingConfig:
