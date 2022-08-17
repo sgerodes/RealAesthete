@@ -4,6 +4,7 @@ import os
 
 class SharedSpiderConfig:
     DEFAULT_PERSISTENCE_PIPELINE_DUPLICATES_THRESHOLD = 15
+    ACTIVE_SPIDERS = os.getenv('ACTIVATE_SPIDERS')
 
 
 class EbayKleinanzeigenScrapingConfig:

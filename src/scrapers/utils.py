@@ -8,6 +8,7 @@ import os
 from .. import persistence
 import inspect
 from . import generic
+from configuration.scrapy_configuration import SharedSpiderConfig
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ def run_parallel_spiders(spiders, project_settings):
 
 
 def run_parallel_spiders_2(spiders_and_settings: List[Tuple[scrapy.spiders.Spider, str]]):
-    activate_spiders = os.getenv('ACTIVATE_SPIDERS')
+    activate_spiders = SharedSpiderConfig.ACTIVE_SPIDERS
     if not activate_spiders:
         logger.warning('ACTIVATE_SPIDERS env variable is not set. Will not crawl')
         return

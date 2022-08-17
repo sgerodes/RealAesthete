@@ -1,20 +1,25 @@
+import logging
 import sqlalchemy
 import os
 from . import models
 from .repositories import *
 from . import utils
+from configuration.sqlalchemy_configuration import PostgresConfiguration, SqlalchemyConfiguration
 
 
-sqlalchemy_database_uri = os.getenv('SQLALCHEMY_DATABASE_URI')
-if sqlalchemy_database_uri.startswith('postgresql'):
-    pool_size = int(os.getenv('POSTGRES_POOL_SIZE', 40))
-    max_overflow = int(os.getenv('POSTGRES_MAX_OVERFLOW', 10))
+logger = logging.getLogger(__name__)
+
+
+if SqlalchemyConfiguration.DATABASE_URI.startswith('postgresql'):
+    pool_size = PostgresConfiguration.POOL_SIZE
+    max_overflow = PostgresConfiguration.MAX_OVERFLOW
+    logger.info(f'Setting postgres engine settings to {pool_size=}, {max_overflow=}')
     engine = sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'),
                                       echo=False,
                                       pool_size=pool_size,
                                       max_overflow=max_overflow)
 else:
-    engine = sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'), echo=False)
+    engine = sqlalchemy.create_engine(SqlalchemyConfiguration.DATABASE_URI, echo=False)
 
 models.Base.metadata.create_all(engine)
 
