@@ -2,6 +2,7 @@ import scrapy
 from . import utils
 from scrapy import signals
 from pydispatch import dispatcher
+import logging
 
 
 class BaseSpider(scrapy.Spider):
@@ -15,3 +16,7 @@ class BaseSpider(scrapy.Spider):
 
     def spider_closed(self):
         self.logger.info(f'Spider closed')
+
+    @classmethod
+    def get_class_logger(cls):
+        return logging.LoggerAdapter(logging.getLogger(cls.name), {'class': cls})

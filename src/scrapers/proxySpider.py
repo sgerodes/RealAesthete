@@ -1,6 +1,6 @@
 import scrapy
 import logging
-from ..items import EbayKleinanzeigenItem
+from src.scrapers.ebay_kleinanzeigen.ebay_kleinanzeigen.items import EbayKleinanzeigenItem
 from src.scrapers.headers import get_random_header_set
 from fake_useragent import UserAgent
 
@@ -23,16 +23,6 @@ class ProxySpider:
         headers = get_random_header_set()
         headers["User-Agent"] = ua.random
         yield scrapy.http.Request(self.start_urls[0], headers=headers)
-
-    def parse_head(self, response, **kwargs):
-        item = EbayKleinanzeigenItem()
-        item['source_id'] = response.text
-        yield item
-
-    def parse_(self, response, **kwargs):
-        item = EbayKleinanzeigenItem()
-        item['source_id'] = response.text
-        yield item
 
     def parse_free_prox(self, response, **kwargs):
         css_selector = "#list td:nth-child(2) , #list td:nth-child(1)"

@@ -1,6 +1,7 @@
 from . import spiders
 from . import pipelines
 
+
 def get_full_package_name_for_class(clazz) -> str:
     return ".".join([clazz.__module__, clazz.__name__])
 

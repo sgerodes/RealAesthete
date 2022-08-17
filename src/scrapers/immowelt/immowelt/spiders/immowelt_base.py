@@ -8,35 +8,26 @@ import random
 from ..items import ImmoweltItem
 from scrapy.exceptions import CloseSpider
 from ....generic import BaseSpider
-from configuration.scrapy_configuration import ImmoweltSpiderConfig as Config
+from configuration.scrapy_configuration import ImmoweltScrapingConfig as Config
+from src.scrapers.utils import catch_errors
 
 
-logger = logging.getLogger(__name__)
-
-
-def catch_errors(func: Callable):
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            logger.warning(f'Error occurred while executing function "{func.__name__}" with args={args}, kwargs={kwargs}')
-            logger.exception(e)
-            return None
-    return wrapper
+# logger = logging.getLogger(__name__)
 
 
 class ImmoweltSpider(BaseSpider):
     ONE_DAY_TIMEDELTA = datetime.timedelta(days=1)
     RANDOM_DECLINE_RATE = None
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.postal_codes_to_stop_searching = set()
         self.set_random_decline_rate()
 
     def set_random_decline_rate(self):
         if Config.ENVIRONMENT_RANDOM_DECLINE_RATE:
             self.RANDOM_DECLINE_RATE = float(Config.ENVIRONMENT_RANDOM_DECLINE_RATE)
-            self.logger.info(f'{self.name} RANDOM_DECLINE_RATE is set by environment to {self.RANDOM_DECLINE_RATE}')
+            self.logger.info(f'RANDOM_DECLINE_RATE is set by environment to {self.RANDOM_DECLINE_RATE}')
             return
         immowelt = persistence.ImmoweltRepository.read_first(estate_type=self.estate_type, exposition_type=self.exposition_type)
         if immowelt and immowelt.created_at:
@@ -44,56 +35,55 @@ class ImmoweltSpider(BaseSpider):
             timedelta_since_first_entry = datetime.datetime.utcnow() - immowelt.created_at
             if timedelta_since_first_entry > Config.RANDOM_DECLINE_RATE_PERIOD:
                 self.RANDOM_DECLINE_RATE = Config.MINIMUM_RANDOM_DECLINE_RATE
-                self.logger.info(f'{self.name} '
-                             f'More than {Config.RANDOM_DECLINE_RATE_PERIOD} passed since the first entry. '
+                self.logger.info(f'More than {Config.RANDOM_DECLINE_RATE_PERIOD} passed since the first entry. '
                              f'RANDOM_DECLINE_RATE set to minimum = {self.RANDOM_DECLINE_RATE}')
                 return
             else:
                 ratio = timedelta_since_first_entry / Config.RANDOM_DECLINE_RATE_PERIOD
                 decline_rate_span = Config.MAXIMUM_RANDOM_DECLINE_RATE - Config.MINIMUM_RANDOM_DECLINE_RATE
                 self.RANDOM_DECLINE_RATE = Config.MINIMUM_RANDOM_DECLINE_RATE + decline_rate_span - (decline_rate_span * ratio)
-                self.logger.info(f'{self.name} calculated RANDOM_DECLINE_RATE: {self.RANDOM_DECLINE_RATE}')
+                self.logger.info(f'calculated RANDOM_DECLINE_RATE: {self.RANDOM_DECLINE_RATE}')
                 return
 
         if not self.RANDOM_DECLINE_RATE:
             self.RANDOM_DECLINE_RATE = Config.MAXIMUM_RANDOM_DECLINE_RATE
-            self.logger.info(f'{self.name} RANDOM_DECLINE_RATE is set to maximum = {self.RANDOM_DECLINE_RATE}')
+            self.logger.info(f'RANDOM_DECLINE_RATE is set to maximum = {self.RANDOM_DECLINE_RATE}')
 
     def stop_searching_on_postal_code(self, postal_code: str):
         self.postal_codes_to_stop_searching.add(postal_code)
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_source_id(item_css_selector):
+    def parse_source_id(cls, item_css_selector):
         return item_css_selector.css('a::attr(id)').get()
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_price(item_css_selector) -> Optional[float]:
+    def parse_price(cls, item_css_selector) -> Optional[float]:
         text: str = item_css_selector.css('[data-test="price"]::text').get()
         if text == 'auf Anfrage':
             return None
         return float(text.replace('€', '').replace('.', '').replace(',', '.').strip())
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_area(item_css_selector) -> Optional[float]:
+    def parse_area(cls, item_css_selector) -> Optional[float]:
         text: str = item_css_selector.css('[data-test="area"]::text').get()
         if not text:
             return None
         return float(text.replace('m²', '').strip())
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_rooms(item_css_selector) -> Optional[float]:
+    def parse_rooms(cls, item_css_selector) -> Optional[float]:
         text: str = item_css_selector.css('[data-test="rooms"]::text').get()
         if not text:
             return None
         return float(text.replace('Zi.', '').strip())
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_city(item_css_selector) -> str:
+    def parse_city(cls, item_css_selector) -> str:
         text: str = item_css_selector.css("[class^='IconFact']").css('span::text').get()
         return text
 
@@ -109,10 +99,10 @@ class ImmoweltSpider(BaseSpider):
             delta_since_last_search: datetime.timedelta = datetime.datetime.utcnow() - ipcs.last_search if ipcs.last_search else None
             if not delta_since_last_search or delta_since_last_search > Config.ABSOLUTE_TIMEDELTA_THRESHOLD:
                 if random.random() > self.RANDOM_DECLINE_RATE:
-                    self.logger.debug('Will crawl, too much time passed since last search')
+                    # self.logger.debug('Will crawl, too much time passed since last search')
                     should_search = True
                 else:
-                    self.logger.debug('Will not crawl, because of the random decline rule')
+                    # self.logger.debug('Will not crawl, because of the random decline rule')
                     continue
 
             delta_since_created: datetime.timedelta = datetime.datetime.utcnow() - ipcs.created_at
@@ -122,7 +112,7 @@ class ImmoweltSpider(BaseSpider):
             #     should_search = True
 
             if not should_search and delta_since_last_search > frequency:
-                self.logger.debug('Will crawl, because of frequency')
+                # self.logger.debug('Will crawl, because of frequency')
                 should_search = True
 
             if should_search:
@@ -137,7 +127,7 @@ class ImmoweltSpider(BaseSpider):
             yield scrapy.http.Request(url, headers=headers, cb_kwargs={'postal_code': ipcs.postal_code, 'page': 1})
 
     def parse(self, response, postal_code: str, page: int):  # noqa
-        self.logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
+        self.logger.debug(f'parsing url {response.request.url}')
 
         css_index_selector = "[class^='EstateItem']"
 
@@ -176,7 +166,7 @@ class ImmoweltSpider(BaseSpider):
             if postal_code not in self.postal_codes_to_stop_searching:
                 new_page = page + 1
                 next_page_url = self.start_urls[0].format(postal_code=postal_code, page=new_page)
-                self.logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
+                self.logger.debug(f'going to the next page {next_page_url}')
                 yield scrapy.Request(next_page_url, callback=self.parse, cb_kwargs={'postal_code': postal_code, 'page': new_page})
             else:
                 self.logger.debug(f'Stopping searching on {postal_code=}')

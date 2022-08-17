@@ -8,34 +8,23 @@ import datetime
 from src import persistence
 from typing import List, Callable, Optional
 from ....generic import BaseSpider
+from configuration.scrapy_configuration import ImmoweltScrapingConfig as Config
+from src.scrapers.utils import catch_errors
 
 
-logger = logging.getLogger(__name__)
-
-
-def catch_errors(func: Callable):
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            logger.warning(f'Error occurred while executing function "{func.__name__}" with args={args}, kwargs={kwargs}')
-            logger.exception(e)
-            return None
-    return wrapper
+# logger = logging.getLogger(__name__)
 
 
 class ImmonetSpider(BaseSpider):
-    BASE_URL = 'https://www.immonet.de/'
-
     def start_requests(self):
         ua = UserAgent()
         headers = get_random_header_set()
         headers["User-Agent"] = ua.random
         yield scrapy.http.Request(self.start_urls[0], headers=headers)
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_price(text: str):
+    def parse_price(cls, text: str):
         # example: '1.040 '
         search = re.compile(r'[\d\.]+').search(text)
         if search:
@@ -43,9 +32,9 @@ class ImmonetSpider(BaseSpider):
             return found.replace('.', '').replace(',', '.').replace('€', '')
         return None
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_city(text: str):
+    def parse_city(cls, text: str):
         # example: 'Etagenwohnung • Coswig '
         if text:
             city = text.split('•')[1].strip()\
@@ -58,9 +47,9 @@ class ImmonetSpider(BaseSpider):
             return city
         return None
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_rooms(text: str) -> Optional[float]:
+    def parse_rooms(cls, text: str) -> Optional[float]:
         if text is None:
             return None
         # example: ' 3.5 '
@@ -70,9 +59,9 @@ class ImmonetSpider(BaseSpider):
             return found
         return None
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_area(text: str) -> Optional[float]:
+    def parse_area(cls, text: str) -> Optional[float]:
         # example: ' 44 '
         if not text:
             return None
@@ -82,19 +71,19 @@ class ImmonetSpider(BaseSpider):
             return found
         return None
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_item_id(text):
+    def parse_item_id(cls, text):
         return text.split('_')[1]
 
     def parse(self, response, **kwargs):
-        logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
+        self.logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
         css_index_selector = '.item'
         next_page_css_selector = '.text-right'
 
         for elem in response.css(css_index_selector):
             source_id = self.parse_item_id(elem.xpath("@id").get())
-            logger.debug(f'parsing item with source_id={source_id}')
+            self.logger.debug(f'parsing item with source_id={source_id}')
 
             item = ImmonetItem()
             item['source_id'] = source_id
@@ -119,17 +108,17 @@ class ImmonetSpider(BaseSpider):
         if next_page_selector:
             href = next_page_selector.xpath('@href').get()
             if href:
-                next_page_url = f'{self.BASE_URL}{href}'
-                logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
+                next_page_url = f'{Config.BASE_URL}{href}'
+                self.logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
                 yield scrapy.Request(next_page_url, callback=self.parse)
             else:
-                logger.debug(f'Spider  {self.__class__.__name__}: href not found in the next_page_selector')
+                self.logger.debug(f'Spider  {self.__class__.__name__}: href not found in the next_page_selector')
 
     def parse_detailed_page(self, response, source_id: str, **kwargs):
-        logger.debug(f'Scraping detailed {source_id=}')
+        self.logger.debug(f'Scraping detailed {source_id=}')
         immonet = persistence.ImmonetRepository.read_by_source_id(source_id)
         if not immonet:
-            logger.error(f'Scrapy detailed page for {source_id=}, but no corresponding db model was found')
+            self.logger.error(f'Scrapy detailed page for {source_id=}, but no corresponding db model was found')
             return None
 
         postal_code = ImmonetPostalCodeSpider.parse_postal_code(response.css('.show').css('.text-100.pull-left').get(), source_id)
@@ -142,7 +131,7 @@ class AbstractImmonetForeclosureSpider(ImmonetSpider):
     def parse(self, *args, **kwargs):
         duplicates = 0
         for super_response in super().parse(*args, **kwargs):
-            if isinstance(super_response, ImmonetItem):
+            if isinstance(super_response, ImmonetItem) and super_response.source_id:
                 db_entity = persistence.ImmonetRepository.read_by_source_id(super_response.source_id)
                 if db_entity:
                     if db_entity.foreclosure is None:
@@ -150,17 +139,17 @@ class AbstractImmonetForeclosureSpider(ImmonetSpider):
                         persistence.ImmonetRepository.update(db_entity)
                     else:
                         duplicates += 1
-                        if duplicates >= 15:
+                        if duplicates >= Config.FORECLOSURE_SPIDER_DUPLICATES_THRESHOLD:
                             self.crawler.engine.close_spider(self, reason=f'to many duplicates {self.name}')
                     continue
             yield super_response
 
 
-class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
+class ImmonetPostalCodeSpider(BaseSpider):
 
-    @staticmethod
+    @classmethod
     @catch_errors
-    def parse_postal_code(text_with_html: str, source_id: str) -> Optional[str]:
+    def parse_postal_code(cls, text_with_html: str, source_id: str) -> Optional[str]:
         # example: ' 63636&nbsp; Brachttal '
         if not text_with_html:
             return None
@@ -171,14 +160,14 @@ class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
             first = findall[0]
             for candidate in findall:
                 if candidate != first:
-                    logger.warning(f'Found more than one postal code candidates for {source_id=}: {text_with_html}')
+                    cls.get_class_logger().warning(f'Found more than one postal code candidates for {source_id=}: {text_with_html}')
                     return None
         return findall[0]
 
     def start_requests(self):
         ua = UserAgent()
         all = persistence.ImmonetRepository.read_all(persistence.Immonet.created_at > datetime.datetime.now() - datetime.timedelta(days=1), postal_code=None)
-        logger.debug(f'{len(all)} immonet entries have no postal_code')
+        self.logger.debug(f'{len(all)} immonet entries have no postal_code')
         for immonet in all:
             url = f'https://www.immonet.de/angebot/{immonet.source_id}'
             headers = get_random_header_set()
@@ -186,10 +175,10 @@ class ImmonetPostalCodeSpider(BaseSpider, scrapy.Spider):
             yield scrapy.http.Request(url, headers=headers, cb_kwargs={'source_id': immonet.source_id, 'immonet_model': immonet})
 
     def parse(self, response, immonet_model: persistence.Immonet, **kwargs):
-        logger.debug(f'Scraping detailed {immonet_model.source_id=}')
+        self.logger.debug(f'Scraping detailed {immonet_model.source_id=}')
         postal_code = self.parse_postal_code(response.css('.show').css('.text-100.pull-left').get(), immonet_model.source_id)
         if not postal_code:
-            logger.warning(f'Could not find the postal code for {immonet_model}')
+            self.logger.warning(f'Could not find the postal code for {immonet_model}')
         # logger.debug(f'updating postal code to {postal_code}')
         immonet_model.postal_code = postal_code
         persistence.ImmonetRepository.update(immonet_model)

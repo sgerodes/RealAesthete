@@ -2,10 +2,11 @@ from src import persistence
 from src.parsers.scrapy2db_parsers import ImmoweltParser
 from ...default_pipelines import DefaultPersistencePipeline
 from .spiders.immowelt_base import ImmoweltSpider, ImmoweltItem
+from configuration.scrapy_configuration import ImmoweltScrapingConfig as Config
 
 
 class ImmoweltPersistencePipeline(DefaultPersistencePipeline):
-    DUPLICATES_THRESHOLD = 7
+    DUPLICATES_THRESHOLD = Config.IMMOWELT_PERSISTENCE_PIPELINE_DUPLICATES_THRESHOLD
     repository = persistence.ImmoweltRepository
     parser = ImmoweltParser
 

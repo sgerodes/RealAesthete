@@ -1,11 +1,13 @@
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 import scrapy
 import datetime
 import logging
 import os
 from .. import persistence
+import inspect
+from . import generic
 
 
 logger = logging.getLogger(__name__)
@@ -103,3 +105,29 @@ class classproperty:
         if self.cached:
             setattr(owner_cls, self.fget.__name__, val)
         return val
+
+
+# should only be used for scrapy spiders
+def catch_errors(func: Callable):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            log = logger
+            args_without_self = args
+            if args:
+                self_or_cls = args[0]
+                args_without_self = args[1:]
+                if inspect.isclass(self_or_cls) and issubclass(self_or_cls, generic.BaseSpider):
+                    log = self_or_cls.get_class_logger()
+                elif isinstance(self_or_cls, scrapy.Spider):
+                    if hasattr(self_or_cls, 'logger'):
+                        log = self_or_cls.logger
+                    else:
+                        log.warning('Spider instance has no attribute "logger"')
+                else:
+                    log.warning('Class of bound method is not of instance or type scrapy.Spider')
+            log.warning(f'Error occurred while executing function "{func.__name__}" with args={args_without_self}, kwargs={kwargs}')
+            log.exception(e)
+            return None
+    return wrapper

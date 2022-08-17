@@ -2,7 +2,7 @@ import logging
 import datetime
 from . import utils
 from scrapy.exceptions import CloseSpider
-
+from configuration.scrapy_configuration import SharedSpiderConfig as Config
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ global_stats = utils.PersistencePipelineStatsService('Global')
 
 
 class DefaultPersistencePipeline:
-    DUPLICATES_THRESHOLD = 15
+    DUPLICATES_THRESHOLD = Config.DEFAULT_PERSISTENCE_PIPELINE_DUPLICATES_THRESHOLD
     class_stats = None
 
     def __init__(self):

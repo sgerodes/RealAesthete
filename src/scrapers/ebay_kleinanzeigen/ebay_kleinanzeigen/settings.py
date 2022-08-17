@@ -1,4 +1,3 @@
-from . import proxies
 from . import spiders
 from . import pipelines
 # Scrapy settings for ebay_kleinanzeigen project
