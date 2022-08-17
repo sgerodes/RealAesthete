@@ -61,7 +61,7 @@ class PersistencePipelineStatsService:
     def add_read(self):
         self.total_read += 1
         rate = (datetime.datetime.utcnow() - self.first_create) / self.total_read
-        logger.debug(f'{self.name} reading rate is {rate}')
+        # logger.debug(f'{self.name} reading rate is {rate}')
         entity = persistence.PersistencePipelineStats()
         entity.name = self.name
         entity.set_type_reading()
@@ -71,7 +71,7 @@ class PersistencePipelineStatsService:
     def add_create(self):
         self.total_created += 1
         rate = (datetime.datetime.utcnow() - self.first_create) / self.total_created
-        logger.debug(f'{self.name} creation rate is {rate}')
+        # logger.debug(f'{self.name} creation rate is {rate}')
         entity = persistence.PersistencePipelineStats()
         entity.name = self.name
         entity.set_type_creation()

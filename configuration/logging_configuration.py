@@ -58,7 +58,7 @@ def configure_logging():
             'scrapy': {
                 'handlers': ['default'],
                 'level': project_log_level,
-                'propagate': True
+                'propagate': False
             },
             'sqlalchemy.engine.Engine': {
                 'level': logging.WARNING,
