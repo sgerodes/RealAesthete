@@ -88,7 +88,6 @@ class ImmoweltSpider(BaseSpider):
         return text
 
     def start_requests(self):
-        ua = UserAgent()
         all = persistence.ImmoweltPostalCodeStatisticsRepository.read_all(estate_type=self.estate_type,
                                                                           exposition_type=self.exposition_type)
         random.shuffle(all)
@@ -121,10 +120,13 @@ class ImmoweltSpider(BaseSpider):
         self.logger.info(f'Based on filters will search {len(all_postal_codes_filtered)} postal codes')
 
         for ipcs in all_postal_codes_filtered:
-            headers = {} # get_random_header_set()
-            headers["User-Agent"] = ua.random
             url = self.start_urls[0].format(postal_code=ipcs.postal_code, page=1)
-            yield scrapy.http.Request(url, headers=headers, cb_kwargs={'postal_code': ipcs.postal_code, 'page': 1})
+            yield scrapy.http.Request(url, headers=self.get_headers(), cb_kwargs={'postal_code': ipcs.postal_code, 'page': 1})
+
+    def get_headers(self):
+        headers = dict()  # get_random_header_set()
+        headers["User-Agent"] = self.get_random_usr_agent()
+        return headers
 
     def parse(self, response, postal_code: str, page: int):  # noqa
         self.logger.debug(f'parsing url {response.request.url}')

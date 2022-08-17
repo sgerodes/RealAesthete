@@ -57,8 +57,8 @@ def configure_logging():
              },
             'scrapy': {
                 'handlers': ['default'],
-                'level': logging.DEBUG,
-                'propagate': False
+                'level': project_log_level,
+                'propagate': True
             },
             'sqlalchemy.engine.Engine': {
                 'level': logging.WARNING,
@@ -71,25 +71,10 @@ def configure_logging():
             'urllib3.connectionpool': {
                 'level': logging.WARNING,
             },
+            'filelock': {
+                'level': logging.WARNING,
+            }
         }
     }
-    if os.getenv('ENABLE_RATE_STATS_FILE_LOGGING', '').upper() == 'TRUE':
-        logger.warning('Rate stats file logging is enabled')
-        logger_config = {
-                # file logger for creation and reading rate
-                'level': logging.DEBUG,
-                'handlers': ['rate_stats_file_handler'],
-            }
-        handler_config = {
-                'level': 'DEBUG',
-                'formatter': 'rate_stats_format',
-                'class': 'logging.FileHandler',
-                'filename': f'{LOGS_FOLDER}/rate_stats_{int(datetime.datetime.now().timestamp())}.log',
-                'mode': 'a',
-            }
-        logger_configuration_dict['handlers']['rate_stats_file_handler'] = handler_config
-        logger_configuration_dict['loggers']['src.scrapers.utils'] = logger_config
 
     logging.config.dictConfig(logger_configuration_dict)
-
-

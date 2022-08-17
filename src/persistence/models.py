@@ -48,9 +48,7 @@ class EbayKleinanzeigen(EstateBase):
     online_since = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
 
     def get_full_url(self):
-        # works both
         return 'https://www.ebay-kleinanzeigen.de/s-anzeige/' + self.source_id
-        # return 'https://www.ebay-kleinanzeigen.de/' + self.url
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'

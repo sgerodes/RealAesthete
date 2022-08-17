@@ -3,6 +3,8 @@ from . import utils
 from scrapy import signals
 from pydispatch import dispatcher
 import logging
+from .headers import get_random_header_set
+from fake_useragent import UserAgent
 
 
 class BaseSpider(scrapy.Spider):
@@ -16,6 +18,15 @@ class BaseSpider(scrapy.Spider):
 
     def spider_closed(self):
         self.logger.info(f'Spider closed')
+
+    def get_headers(self):
+        headers = get_random_header_set()
+        headers["User-Agent"] = self.get_random_usr_agent()
+        return headers
+
+    def get_random_usr_agent(self):
+        ua = UserAgent()
+        return ua.random
 
     @classmethod
     def get_class_logger(cls):

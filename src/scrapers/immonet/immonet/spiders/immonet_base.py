@@ -17,10 +17,7 @@ from src.scrapers.utils import catch_errors
 
 class ImmonetSpider(BaseSpider):
     def start_requests(self):
-        ua = UserAgent()
-        headers = get_random_header_set()
-        headers["User-Agent"] = ua.random
-        yield scrapy.http.Request(self.start_urls[0], headers=headers)
+        yield scrapy.http.Request(self.start_urls[0], headers=self.get_headers())
 
     @classmethod
     @catch_errors
@@ -102,7 +99,8 @@ class ImmonetSpider(BaseSpider):
             yield item
             yield scrapy.Request(f'https://www.immonet.de/angebot/{source_id}',
                                  callback=self.parse_detailed_page,
-                                 cb_kwargs={'source_id': source_id})
+                                 cb_kwargs={'source_id': source_id},
+                                 headers=self.get_headers())
 
         next_page_selector = response.css(next_page_css_selector)
         if next_page_selector:
@@ -110,7 +108,7 @@ class ImmonetSpider(BaseSpider):
             if href:
                 next_page_url = f'{Config.BASE_URL}{href}'
                 self.logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
-                yield scrapy.Request(next_page_url, callback=self.parse)
+                yield scrapy.Request(next_page_url, callback=self.parse, headers=self.get_headers())
             else:
                 self.logger.debug(f'Spider  {self.__class__.__name__}: href not found in the next_page_selector')
 
@@ -165,14 +163,11 @@ class ImmonetPostalCodeSpider(BaseSpider):
         return findall[0]
 
     def start_requests(self):
-        ua = UserAgent()
         all = persistence.ImmonetRepository.read_all(persistence.Immonet.created_at > datetime.datetime.now() - datetime.timedelta(days=1), postal_code=None)
-        self.logger.debug(f'{len(all)} immonet entries have no postal_code')
+        self.logger.info(f'{len(all)} immonet entries have no postal_code')
         for immonet in all:
             url = f'https://www.immonet.de/angebot/{immonet.source_id}'
-            headers = get_random_header_set()
-            headers["User-Agent"] = ua.random
-            yield scrapy.http.Request(url, headers=headers, cb_kwargs={'source_id': immonet.source_id, 'immonet_model': immonet})
+            yield scrapy.http.Request(url, headers=self.get_headers(), cb_kwargs={'source_id': immonet.source_id, 'immonet_model': immonet})
 
     def parse(self, response, immonet_model: persistence.Immonet, **kwargs):
         self.logger.debug(f'Scraping detailed {immonet_model.source_id=}')

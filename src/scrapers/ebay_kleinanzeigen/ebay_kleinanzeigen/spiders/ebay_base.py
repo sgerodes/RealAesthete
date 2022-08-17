@@ -16,10 +16,7 @@ from configuration.scrapy_configuration import EbayKleinanzeigenScrapingConfig a
 
 class EbayKleinanzeigenSpider(BaseSpider):
     def start_requests(self):
-        ua = UserAgent()
-        headers = get_random_header_set()
-        headers["User-Agent"] = ua.random
-        yield scrapy.http.Request(self.start_urls[0], headers=headers)
+        yield scrapy.http.Request(self.start_urls[0], headers=self.get_headers())
 
     @classmethod
     @catch_errors
@@ -102,7 +99,6 @@ class EbayKleinanzeigenSpider(BaseSpider):
                 item['area'] = EbayKleinanzeigenSpider.parse_area(tag)
 
     def parse(self, response, **kwargs):
-        self.logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
         css_index_selector = '.aditem'
         next_page_css_selector = '.pagination-next'
 
@@ -130,7 +126,7 @@ class EbayKleinanzeigenSpider(BaseSpider):
             href = next_page_selector.xpath('@href').get()
             if href:
                 next_page_url = f'{Config.BASE_URL}{href}'
-                self.logger.debug(f'Spider {self.__class__.__name__}: going to the next page {next_page_url}')
-                yield scrapy.Request(next_page_url, callback=self.parse)
+                self.logger.debug(f'going to the next page {next_page_url}')
+                yield scrapy.Request(next_page_url, callback=self.parse, headers=self.get_headers())
             else:
-                self.logger.debug(f'Spider  {self.__class__.__name__}: href not found in the next_page_selector')
+                self.logger.debug(f'href not found in the next_page_selector')
