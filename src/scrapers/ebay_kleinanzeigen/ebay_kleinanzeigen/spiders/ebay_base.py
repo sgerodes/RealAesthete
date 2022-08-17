@@ -110,10 +110,10 @@ class EbayKleinanzeigenSpider(BaseSpider):
 
             item = EbayKleinanzeigenItem()
             item.source_id = source_id
-            item.url = elem.xpath("@data-href").get()
-            item['price'] = self.parse_price(elem.css('.aditem-main--middle--price::text').get())
-            item['postal_code'], item['city'] = self.parse_postal_code_and_city(''.join(elem.css('.aditem-main--top--left::text').getall()))
-            item['online_since'] = self.parse_online_since(''.join(elem.css('.aditem-main--top--right::text').getall()))
+            # item.url = elem.xpath("@data-href").get()
+            item.price = self.parse_price(elem.css('.aditem-main--middle--price::text').get())
+            item.postal_code, item.city = self.parse_postal_code_and_city(''.join(elem.css('.aditem-main--top--left::text').getall()))
+            item.online_since = self.parse_online_since(''.join(elem.css('.aditem-main--top--right::text').getall()))
             self.scalp_tags(item, elem.css('.simpletag::text').getall())
 
             if hasattr(self, 'estate_type'):

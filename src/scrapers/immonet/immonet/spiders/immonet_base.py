@@ -23,6 +23,8 @@ class ImmonetSpider(BaseSpider):
     @catch_errors
     def parse_price(cls, text: str):
         # example: '1.040 '
+        if not text:
+            return
         search = re.compile(r'[\d\.]+').search(text)
         if search:
             found = search.group(0)
@@ -33,16 +35,16 @@ class ImmonetSpider(BaseSpider):
     @catch_errors
     def parse_city(cls, text: str):
         # example: 'Etagenwohnung • Coswig '
-        if text:
-            city = text.split('•')[1].strip()\
-                .replace('\n', '')\
-                .replace('\r', '')\
-                .replace('\t\t\t\t\t\t\t', ' ')
-            split = city.split(' ')
-            if len(split) == 2 and split[0] == split[1]:
-                city = split[0]
-            return city
-        return None
+        if not text:
+            return
+        city = text.split('•')[1].strip()\
+            .replace('\n', '')\
+            .replace('\r', '')\
+            .replace('\t\t\t\t\t\t\t', ' ')
+        split = city.split(' ')
+        if len(split) == 2 and split[0] == split[1]:
+            city = split[0]
+        return city
 
     @classmethod
     @catch_errors
@@ -71,6 +73,8 @@ class ImmonetSpider(BaseSpider):
     @classmethod
     @catch_errors
     def parse_item_id(cls, text):
+        if not text:
+            return
         return text.split('_')[1]
 
     def parse(self, response, **kwargs):
@@ -144,6 +148,8 @@ class AbstractImmonetForeclosureSpider(ImmonetSpider):
 
 
 class ImmonetPostalCodeSpider(BaseSpider):
+    def __init__(self):
+        self.updated_postal_codes = 0
 
     @classmethod
     @catch_errors
@@ -169,11 +175,17 @@ class ImmonetPostalCodeSpider(BaseSpider):
             url = f'https://www.immonet.de/angebot/{immonet.source_id}'
             yield scrapy.http.Request(url, headers=self.get_headers(), cb_kwargs={'source_id': immonet.source_id, 'immonet_model': immonet})
 
+    def on_close(self):
+        self.logger.info(f'Updated {self.updated_postal_codes} postal codes')
+
     def parse(self, response, immonet_model: persistence.Immonet, **kwargs):
         self.logger.debug(f'Scraping detailed {immonet_model.source_id=}')
         postal_code = self.parse_postal_code(response.css('.show').css('.text-100.pull-left').get(), immonet_model.source_id)
         if not postal_code:
             self.logger.warning(f'Could not find the postal code for {immonet_model}')
-        # logger.debug(f'updating postal code to {postal_code}')
-        immonet_model.postal_code = postal_code
-        persistence.ImmonetRepository.update(immonet_model)
+        else:
+            # logger.debug(f'updating postal code to {postal_code}')
+            immonet_model.postal_code = postal_code
+            persistence.ImmonetRepository.update(immonet_model)
+            self.updated_postal_codes += 1
+

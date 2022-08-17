@@ -1,7 +1,5 @@
 import logging
-import datetime
 from . import utils
-from scrapy.exceptions import CloseSpider
 from configuration.scrapy_configuration import SharedSpiderConfig as Config
 
 logger = logging.getLogger(__name__)
@@ -33,13 +31,10 @@ class DefaultPersistencePipeline:
         self.__class__.class_stats.add_read()
         self.instance_stats.add_read()
 
-        estate_type = spider.estate_type if hasattr(spider, 'estate_type') else ''
-        exposition_type = spider.exposition_type if hasattr(spider, 'exposition_type') else ''
-        logger.debug(f'processing item with source_id={item.get("source_id")}')
         db_model = self.repository.read_by_source_id(item.get('source_id'))
         if db_model:
             self.duplicates_score += 1
-            logger.debug(f'Duplicate found duplicates_score={self.duplicates_score}, {estate_type}, {exposition_type}')
+            spider.logger.debug(f'Duplicate found duplicates_score={self.duplicates_score}')
         else:
             new_db_model = self.parser.create_from_scrapy_item(item)
             self.repository.create(new_db_model)
@@ -51,10 +46,9 @@ class DefaultPersistencePipeline:
             self.instance_stats.add_create()
 
         if self.DUPLICATES_THRESHOLD is not None and self.duplicates_score > self.DUPLICATES_THRESHOLD:
-            logger.debug(
-                f'Duplicate count hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider. {estate_type}, {exposition_type}')
+            spider.logger.info(f'Duplicate count hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider.')
             self.on_too_many_duplicates(item, spider)
         return item
 
     def on_too_many_duplicates(self, item, spider):
-        spider.crawler.engine.close_spider(self, reason=f'to many duplicates {spider.name}')
+        spider.crawler.engine.close_spider(self, reason=f'{spider.name}: to many duplicates')

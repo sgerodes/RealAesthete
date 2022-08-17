@@ -17,7 +17,10 @@ class BaseSpider(scrapy.Spider):
         super().__init__(*args, **kwargs)
 
     def spider_closed(self):
+        if hasattr(self, 'on_close'):
+            self.on_close()
         self.logger.info(f'Spider closed')
+
 
     def get_headers(self):
         headers = get_random_header_set()
