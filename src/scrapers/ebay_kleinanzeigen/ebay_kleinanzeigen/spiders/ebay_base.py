@@ -104,7 +104,10 @@ class EbayKleinanzeigenSpider(BaseSpider):
         css_index_selector = '.aditem'
         next_page_css_selector = '.pagination-next'
 
-        for elem in response.css(css_index_selector):
+        elements = response.css(css_index_selector)
+        if not elements:
+            self.logger.warning(f'Maybe rate limited. Not elements found on the page: {response.request.url}')
+        for elem in elements:
             source_id = elem.xpath("@data-adid").get()
             # self.logger.debug(f'processing item with source_id={source_id}')
 

@@ -46,9 +46,9 @@ class DefaultPersistencePipeline:
             self.instance_stats.add_create()
 
         if self.DUPLICATES_THRESHOLD is not None and self.duplicates_score > self.DUPLICATES_THRESHOLD:
-            spider.logger.info(f'Duplicate count hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider.')
             self.on_too_many_duplicates(item, spider)
         return item
 
     def on_too_many_duplicates(self, item, spider):
+        spider.logger.info(f'Duplicate count hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider.')
         spider.crawler.engine.close_spider(self, reason=f'{spider.name}: to many duplicates')

@@ -11,5 +11,6 @@ class ImmoweltPersistencePipeline(DefaultPersistencePipeline):
     parser = ImmoweltParser
 
     def on_too_many_duplicates(self, item: ImmoweltItem, spider: ImmoweltSpider):
+        spider.logger.debug(f'Duplicate count on postal_code={item.postal_code} hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider.')
         spider.stop_searching_on_postal_code(item.postal_code)
         self.duplicates_score = 0
