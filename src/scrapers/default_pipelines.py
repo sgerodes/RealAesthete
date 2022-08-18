@@ -15,7 +15,7 @@ class DefaultPersistencePipeline:
     def __init__(self):
         self.name = self.__class__.__name__
         self.duplicates_score = 0.0
-        self.spider_closed = False
+        self.pipeline_closed = False
         if not hasattr(self, 'repository'):
             logger.error(f'You forgot to specify the repository for {self.__class__}')
         if not hasattr(self, 'parser'):
@@ -32,23 +32,24 @@ class DefaultPersistencePipeline:
         self.__class__.class_stats.add_read()
         self.instance_stats.add_read()
 
-        db_model = self.repository.read_by_source_id(item.get('source_id'))
-        if db_model:
-            self.duplicates_score += 1
-            spider.logger.debug(f'Duplicate found duplicates_score={self.duplicates_score}')
-        else:
-            new_db_model = self.parser.create_from_scrapy_item(item)
-            self.repository.create(new_db_model)
-            self.duplicates_score -= 0.5
-            self.duplicates_score = max(self.duplicates_score, 0)
+        if not self.pipeline_closed:
+            db_model = self.repository.read_by_source_id(item.get('source_id'))
+            if db_model:
+                self.duplicates_score += 1
+                spider.logger.debug(f'Duplicate found duplicates_score={self.duplicates_score}')
+            else:
+                new_db_model = self.parser.create_from_scrapy_item(item)
+                self.repository.create(new_db_model)
+                self.duplicates_score -= 0.5
+                self.duplicates_score = max(self.duplicates_score, 0)
 
-            global_stats.add_create()
-            self.__class__.class_stats.add_create()
-            self.instance_stats.add_create()
+                global_stats.add_create()
+                self.__class__.class_stats.add_create()
+                self.instance_stats.add_create()
 
-        if not self.spider_closed and self.DUPLICATES_THRESHOLD is not None and self.duplicates_score > self.DUPLICATES_THRESHOLD:
+        if not self.pipeline_closed and self.DUPLICATES_THRESHOLD is not None and self.duplicates_score > self.DUPLICATES_THRESHOLD:
             self.on_too_many_duplicates(item, spider)
-            self.spider_closed = True
+            self.pipeline_closed = True
         return item
 
     def on_too_many_duplicates(self, item, spider):
