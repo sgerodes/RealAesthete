@@ -40,8 +40,7 @@ class DefaultPersistencePipeline:
             else:
                 new_db_model = self.parser.create_from_scrapy_item(item)
                 self.repository.create(new_db_model)
-                self.duplicates_score -= 0.5
-                self.duplicates_score = max(self.duplicates_score, 0)
+                self.duplicates_score = max(self.duplicates_score - 0.5, 0)
 
                 global_stats.add_create()
                 self.__class__.class_stats.add_create()
@@ -50,8 +49,9 @@ class DefaultPersistencePipeline:
         if not self.pipeline_closed and self.DUPLICATES_THRESHOLD is not None and self.duplicates_score > self.DUPLICATES_THRESHOLD:
             self.on_too_many_duplicates(item, spider)
             self.pipeline_closed = True
+
         return item
 
     def on_too_many_duplicates(self, item, spider):
         spider.logger.info(f'Duplicate count hit the threshold of {self.DUPLICATES_THRESHOLD}. Stopping the spider.')
-        spider.crawler.engine.close_spider(self, reason=f'{spider.name}: to many duplicates')
+        spider.crawler.engine.close_spider(spider, reason=f'{spider.name}: to many duplicates')
