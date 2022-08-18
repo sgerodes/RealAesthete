@@ -15,6 +15,7 @@ class DefaultPersistencePipeline:
     def __init__(self):
         self.name = self.__class__.__name__
         self.duplicates_score = 0.0
+        self.spider_closed = False
         if not hasattr(self, 'repository'):
             logger.error(f'You forgot to specify the repository for {self.__class__}')
         if not hasattr(self, 'parser'):
@@ -45,8 +46,9 @@ class DefaultPersistencePipeline:
             self.__class__.class_stats.add_create()
             self.instance_stats.add_create()
 
-        if self.DUPLICATES_THRESHOLD is not None and self.duplicates_score > self.DUPLICATES_THRESHOLD:
+        if not self.spider_closed and self.DUPLICATES_THRESHOLD is not None and self.duplicates_score > self.DUPLICATES_THRESHOLD:
             self.on_too_many_duplicates(item, spider)
+            self.spider_closed = True
         return item
 
     def on_too_many_duplicates(self, item, spider):
