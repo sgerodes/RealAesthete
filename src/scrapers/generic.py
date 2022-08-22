@@ -1,26 +1,28 @@
 import scrapy
 from . import utils
-from scrapy import signals
-from pydispatch import dispatcher
 import logging
 from .headers import get_random_header_set
 from fake_useragent import UserAgent
 
 
 class BaseSpider(scrapy.Spider):
+    OPEN_SPIDERS = list()
+
     @utils.classproperty
     def name(cls):
         return cls.__name__
 
     def __init__(self, *args, **kwargs):
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
+        BaseSpider.OPEN_SPIDERS.append(self.name)
+        self.logger.info(f'Starting spider spiders: {self.name}. Open spiders: {BaseSpider.OPEN_SPIDERS}')
         super().__init__(*args, **kwargs)
 
-    def spider_closed(self):
-        if hasattr(self, 'on_close'):
-            self.on_close()
-        self.logger.info(f'Spider closed')
-
+    def closed(self, reason):
+        if self.name in BaseSpider.OPEN_SPIDERS:
+            BaseSpider.OPEN_SPIDERS.remove(self.name)
+        else:
+            self.logger.warning(f'Tried to remove a non existing name from the open spiders list OPEN_SPIDERS={BaseSpider.OPEN_SPIDERS}')
+        self.logger.info(f'Spider closed. Open spiders: {BaseSpider.OPEN_SPIDERS}')
 
     def get_headers(self):
         headers = get_random_header_set()

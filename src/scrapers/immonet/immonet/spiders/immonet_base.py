@@ -175,8 +175,9 @@ class ImmonetPostalCodeSpider(BaseSpider):
             url = f'https://www.immonet.de/angebot/{immonet.source_id}'
             yield scrapy.http.Request(url, headers=self.get_headers(), cb_kwargs={'source_id': immonet.source_id, 'immonet_model': immonet})
 
-    def on_close(self):
+    def closed(self, reason):
         self.logger.info(f'Updated {self.updated_postal_codes} postal codes')
+        super().closed(reason)
 
     def parse(self, response, immonet_model: persistence.Immonet, **kwargs):
         self.logger.debug(f'Scraping detailed {immonet_model.source_id=}')
