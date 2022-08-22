@@ -14,6 +14,7 @@ class EbayKleinanzeigenScrapingConfig:
 
 class ImmonetScrapingConfig:
     BASE_URL = 'https://www.immonet.de/'
+    FORECLOSURE_SPIDER_DUPLICATES_THRESHOLD = 15
 
 
 class ImmoweltScrapingConfig:
@@ -24,7 +25,6 @@ class ImmoweltScrapingConfig:
     MAXIMUM_RANDOM_DECLINE_RATE = 0.5
     DEFAULT_RANDOM_DECLINE_RATE = 0.3
     RANDOM_DECLINE_RATE_PERIOD = datetime.timedelta(days=14)
-    FORECLOSURE_SPIDER_DUPLICATES_THRESHOLD = 15
     IMMOWELT_PERSISTENCE_PIPELINE_DUPLICATES_THRESHOLD = 7
 
 
