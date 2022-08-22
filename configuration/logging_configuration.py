@@ -5,7 +5,7 @@ import logging.handlers
 import os
 
 logger = logging.getLogger(__name__)
-DEFAULT_LOG_LEVEL = 'DEBUG'
+DEFAULT_LOG_LEVEL = 'INFO'
 LOGS_FOLDER = '.logs'
 
 
