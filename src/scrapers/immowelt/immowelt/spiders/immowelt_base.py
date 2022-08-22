@@ -123,7 +123,7 @@ class ImmoweltSpider(BaseSpider):
             ipcs = all_postal_codes_filtered.pop()
         #for ipcs in all_postal_codes_filtered:
             url = self.start_urls[0].format(postal_code=ipcs.postal_code, page=1)
-            if len(all_postal_codes_filtered) % 100 == 0:
+            if len(all_postal_codes_filtered) % 200 == 0:
                 self.logger.info(f'{len(all_postal_codes_filtered)} are remaining for scraping')
             yield scrapy.http.Request(url, headers=self.get_headers(), cb_kwargs={'postal_code': ipcs.postal_code, 'page': 1})
 

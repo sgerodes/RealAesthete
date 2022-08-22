@@ -78,7 +78,7 @@ class ImmonetSpider(BaseSpider):
         return text.split('_')[1]
 
     def parse(self, response, **kwargs):
-        self.logger.debug(f'Spider {self.__class__.__name__}: parsing url {response.request.url}')
+        self.logger.info(f'Parsing url {response.request.url}')
         css_index_selector = '.item'
         next_page_css_selector = '.text-right'
 
@@ -101,10 +101,13 @@ class ImmonetSpider(BaseSpider):
                 item['foreclosure'] = self.foreclosure
 
             yield item
-            yield scrapy.Request(f'https://www.immonet.de/angebot/{source_id}',
-                                 callback=self.parse_detailed_page,
-                                 cb_kwargs={'source_id': source_id},
-                                 headers=self.get_headers())
+            if source_id:
+                yield scrapy.Request(f'https://www.immonet.de/angebot/{source_id}',
+                                     callback=self.parse_detailed_page,
+                                     cb_kwargs={'source_id': source_id},
+                                     headers=self.get_headers())
+            else:
+                self.logger.warning(f'No source_id found for element')
 
         next_page_selector = response.css(next_page_css_selector)
         if next_page_selector:
@@ -130,6 +133,12 @@ class ImmonetSpider(BaseSpider):
 
 
 class AbstractImmonetForeclosureSpider(ImmonetSpider):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.piped = 0
+        self.updated = 0
+
     def parse(self, *args, **kwargs):
         duplicates = 0
         for super_response in super().parse(*args, **kwargs):
@@ -139,12 +148,20 @@ class AbstractImmonetForeclosureSpider(ImmonetSpider):
                     if db_entity.foreclosure is None:
                         db_entity.foreclosure = super_response.foreclosure
                         persistence.ImmonetRepository.update(db_entity)
+                        self.updated += 1
+
                     else:
                         duplicates += 1
                         if duplicates >= Config.FORECLOSURE_SPIDER_DUPLICATES_THRESHOLD:
                             self.crawler.engine.close_spider(self, reason=f'to many duplicates {self.name}')
                     continue
+            self.piped += 1
             yield super_response
+
+    def closed(self, reason):
+        self.logger.info(f'Updated {self.updated} entries')
+        self.logger.info(f'Piped further {self.piped} entries')
+        super().closed(reason)
 
 
 class ImmonetPostalCodeSpider(BaseSpider):

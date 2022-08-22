@@ -99,7 +99,7 @@ class EbayKleinanzeigenSpider(BaseSpider):
                 item['area'] = EbayKleinanzeigenSpider.parse_area(tag)
 
     def parse(self, response, **kwargs):
-        self.logger.debug(f'Scalping {response.request.url}')
+        self.logger.info(f'Scalping {response.request.url}')
 
         css_index_selector = '.aditem'
         next_page_css_selector = '.pagination-next'
