@@ -8,7 +8,7 @@ import datetime
 from src import persistence
 from typing import List, Callable, Optional
 from ....generic import BaseSpider
-from configuration.scrapy_configuration import ImmoweltScrapingConfig as Config
+from configuration.scrapy_configuration import ImmonetScrapingConfig as Config
 from src.scrapers.utils import catch_errors
 
 

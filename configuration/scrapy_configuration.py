@@ -17,7 +17,7 @@ class ImmonetScrapingConfig:
 
 
 class ImmoweltScrapingConfig:
-    BASE_URL = 'https://www.immowelt.de/'
+    BASE_URL = 'https://www.immowelt.de'
     ENVIRONMENT_RANDOM_DECLINE_RATE = os.getenv('IMMOWELT_SPIDER_RANDOM_DECLINE_RATE')
     ABSOLUTE_TIMEDELTA_THRESHOLD = datetime.timedelta(days=7)
     MINIMUM_RANDOM_DECLINE_RATE = 0.1
