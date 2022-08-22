@@ -78,7 +78,7 @@ class ImmonetSpider(BaseSpider):
         return text.split('_')[1]
 
     def parse(self, response, **kwargs):
-        self.logger.info(f'Parsing url {response.request.url}')
+        self.logger.info(f'Scalping url {response.request.url}')
         css_index_selector = '.item'
         next_page_css_selector = '.text-right'
 

@@ -133,7 +133,7 @@ class ImmoweltSpider(BaseSpider):
         return headers
 
     def parse(self, response, postal_code: str, page: int):  # noqa
-        self.logger.debug(f'parsing url {response.request.url}')
+        self.logger.debug(f'Scalping url {response.request.url}')
 
         css_index_selector = "[class^='EstateItem']"
 
