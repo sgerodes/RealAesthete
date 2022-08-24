@@ -4,8 +4,6 @@ from typing import List, Tuple, Callable
 import scrapy
 import datetime
 import logging
-import os
-from .. import persistence
 import inspect
 from . import generic
 from configuration.scrapy_configuration import SharedSpiderConfig
@@ -63,21 +61,21 @@ class PersistencePipelineStatsService:
         self.total_read += 1
         rate = (datetime.datetime.utcnow() - self.first_create) / self.total_read
         # logger.debug(f'{self.name} reading rate is {rate}')
-        entity = persistence.PersistencePipelineStats()
-        entity.name = self.name
-        entity.set_type_reading()
-        entity.set_rate_from_timedelta(rate)
-        persistence.PersistencePipelineStatsRepository.create(entity)
+        #entity = persistence.PersistencePipelineStats()
+        #entity.name = self.name
+        #entity.set_type_reading()
+        #entity.set_rate_from_timedelta(rate)
+        #persistence.PersistencePipelineStatsRepository.create(entity)
 
     def add_create(self):
         self.total_created += 1
         rate = (datetime.datetime.utcnow() - self.first_create) / self.total_created
         # logger.debug(f'{self.name} creation rate is {rate}')
-        entity = persistence.PersistencePipelineStats()
-        entity.name = self.name
-        entity.set_type_creation()
-        entity.set_rate_from_timedelta(rate)
-        persistence.PersistencePipelineStatsRepository.create(entity)
+        #entity = persistence.PersistencePipelineStats()
+        #entity.name = self.name
+        #entity.set_type_creation()
+        #entity.set_rate_from_timedelta(rate)
+        #persistence.PersistencePipelineStatsRepository.create(entity)
 
 class cached_classproperty:  # noqa
     """

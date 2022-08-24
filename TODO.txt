@@ -1,0 +1,6 @@
+fetch data from
+- https://www.wg-gesucht.de/
+- https://www.immobilien.de/
+- https://www.immobilienscout24.de/wohnen/wg-zimmer.html    (use https://www.immobilienscout24.de/Suche/de/haus-mieten?sorting=2&enteredFrom=result_list)
+- https://www.neubaukompass.de
+- https://www.1a-immobilienmarkt.de/

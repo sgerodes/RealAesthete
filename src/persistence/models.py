@@ -32,20 +32,28 @@ class EstateBase(Base):
     created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow, index=True)
 
 
-class EbayKleinanzeigen(EstateBase):
-    source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.EbayKleinanzeigen)
-
+class EstateClassic(EstateBase):
+    __abstract__ = True
     exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True)
     estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True)
     price = sqlalchemy.Column(sqlalchemy.Float, index=True)
     area = sqlalchemy.Column(sqlalchemy.Float, index=True)
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True)
-    # url = sqlalchemy.Column(sqlalchemy.String)
 
-    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, index=True)
-    rooms = sqlalchemy.Column(sqlalchemy.Float, index=True)
+
+class EbayKleinanzeigen(EstateClassic):
+    source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.EbayKleinanzeigen)
+
+    #exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True)
+    #estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True)
+    #price = sqlalchemy.Column(sqlalchemy.Float, index=True)
+    #area = sqlalchemy.Column(sqlalchemy.Float, index=True)
+    #postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True)
+
+    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, index=True)  # TODO creation of a index is questionable
+    rooms = sqlalchemy.Column(sqlalchemy.Float, index=True)   # TODO creation of a index is questionable
     city = sqlalchemy.Column(sqlalchemy.String)
-    online_since = sqlalchemy.Column(sqlalchemy.DateTime, index=True)
+    online_since = sqlalchemy.Column(sqlalchemy.DateTime, index=True)   # TODO creation of a index is questionable
 
     def get_full_url(self):
         return 'https://www.ebay-kleinanzeigen.de/s-anzeige/' + self.source_id
@@ -54,17 +62,17 @@ class EbayKleinanzeigen(EstateBase):
         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} price={self.price} area={self.area})'
 
 
-class Immonet(EstateBase):
+class Immonet(EstateClassic):
     source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.Immonet)
 
-    exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
-    estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
-    price = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
-    area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
-    postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True) # cant get postal code from the search page
+    #exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
+    #estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
+    #price = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    #area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    #postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True)
 
-    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
-    rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)   # TODO creation of a index is questionable
+    rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)   # TODO creation of a index is questionable
     city = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     foreclosure = sqlalchemy.Column(sqlalchemy.Boolean)
 
@@ -79,7 +87,7 @@ class Immonet(EstateBase):
 class AbstractImmonetDetailed(EstateBase):
     __abstract__ = True
     #owner_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey(f'{Immonet.__tablename__}.id'), unique=True)
-    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
+    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)   # TODO creation of a index is questionable
     postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True)
 
     @sqlalchemy.ext.declarative.declared_attr
@@ -122,17 +130,17 @@ class AbstractImmonetDetailed(EstateBase):
 #         return f'{self.__class__.__name__}({self.id} source_id={self.source_id} owner_id={self.owner_id} postal_code={self.postal_code})'
 
 
-class Immowelt(EstateBase):
+class Immowelt(EstateClassic):
     source = sqlalchemy.Column(sqlalchemy.Enum(enums.EstateSource), index=True, default=enums.EstateSource.Immowelt)
 
-    exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
-    estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
-    price = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
-    area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
-    postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True)
+    #exposition_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.ExpositionType), index=True, nullable=True)
+    #estate_type = sqlalchemy.Column(sqlalchemy.Enum(scrapers.enums.EstateType), index=True, nullable=True)
+    #price = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    #area = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    #postal_code = sqlalchemy.Column(sqlalchemy.String(5), index=True, nullable=True)
 
-    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)
-    rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)
+    source_id = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True, index=True)   # TODO creation of a index is questionable
+    rooms = sqlalchemy.Column(sqlalchemy.Float, nullable=True, index=True)   # TODO creation of a index is questionable
     city = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
     def get_full_url(self):
