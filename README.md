@@ -1,4 +1,4 @@
-To connect to raspberry us 
+To connect to raspberry use
 ```zsh
 ssh pi@raspberrypisdextremeplus
 ```
@@ -18,6 +18,8 @@ docker run -e SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@raspberrypi
 ```zsh
 docker build -t real-aesthete-base -f Dockerfile-base .
 ```
+
+legacy code, use the normal build command on the raspi
 ```zsh
 docker buildx build --platform=linux/arm/v7 -t real-aesthete-base-arm -f Dockerfile-base .
 ```
@@ -26,6 +28,8 @@ docker buildx build --platform=linux/arm/v7 -t real-aesthete-base-arm -f Dockerf
 ```zsh
 docker build -t real-aesthete .
 ```
+
+legacy code, use the normal build command on the raspi
 ```zsh
 docker buildx build --platform=linux/arm/v7 -t real-aesthete-arm .
 ```
