@@ -9,6 +9,7 @@ from typing import List, Callable
 from ....generic import BaseSpider
 from src.scrapers.utils import catch_errors
 from configuration.scrapy_configuration import EbayKleinanzeigenScrapingConfig as Config
+import lxml
 
 
 # logger = logging.getLogger(__name__)
@@ -56,6 +57,16 @@ class EbayKleinanzeigenSpider(BaseSpider):
 
     @classmethod
     @catch_errors
+    def parse_postal_code_and_city_from_div_tag(cls, tag_text: str):
+        # example: ' <div class="aditem-main--top--left">
+        #     <i class="icon icon-small icon-pin"></i> 79862 Höchenschwand
+        # </div>'
+        root = lxml.html.fromstring(tag_text)
+        i_tag = root.find('.//i')
+        return cls.parse_postal_code_and_city(i_tag.tail)
+
+    @classmethod
+    @catch_errors
     def parse_postal_code_and_city(cls, text: str):
         # example: ' 59602 Rüthen'
         if not text:
@@ -64,8 +75,16 @@ class EbayKleinanzeigenSpider(BaseSpider):
         if len(split) != 2:
             cls.get_class_logger().debug(f'Could not split the postal code and city text into two parts. Got {len(split)}')
             return None, None
-        postal_code, city = split
-        city = city.replace('\t', ' ').replace(u'\u200B', '')
+
+        postal_code = None
+        match = re.search('\d{5}', text)
+        if match:
+            postal_code = match.group()
+            text = text.replace(postal_code, '')
+
+        # postal_code, city = split
+        city = text.replace('\t', ' ').replace(u'\u200B', '').replace('\n', '').strip()
+        city = re.sub(r'\s+', ' ', city).strip()
         return postal_code, city
 
     @classmethod
@@ -101,9 +120,21 @@ class EbayKleinanzeigenSpider(BaseSpider):
     def parse(self, response, **kwargs):
         self.logger.info(f'Scalping {response.request.url}')
 
+        page_str = response.text
+
+        if response.text.count('<div') != response.text.count('</div'):
+            logging.warning(f'Page {response.request.url} has a different number of <div> {response.text.count("<div")} and </div> {response.text.count("</div")} tags. Trying to fix it.')
+            fixed_page = response.text
+            fixed_page = fixed_page.replace('</article>', '</div></article> ')
+            logging.debug(f'div count: {fixed_page.count("<div")} and </div> count: {fixed_page.count("</div")}')
+            if fixed_page.count('<div') != fixed_page.count('</div'):
+                logging.warning(f'Could not fix the page {response.request.url}')
+            else:
+                # response.body = fixed_page.encode('utf-8')
+                response = response.replace(body=fixed_page.encode('utf-8'))
+
         css_index_selector = '.aditem'
         next_page_css_selector = '.pagination-next'
-
         elements = response.css(css_index_selector)
         if not elements:
             self.logger.warning(f'Maybe rate limited. Not elements found on the page: {response.request.url}')
@@ -114,8 +145,11 @@ class EbayKleinanzeigenSpider(BaseSpider):
             item = EbayKleinanzeigenItem()
             item.source_id = source_id
             # item.url = elem.xpath("@data-href").get()
-            item.price = self.parse_price(elem.css('.aditem-main--middle--price::text').get())
-            item.postal_code, item.city = self.parse_postal_code_and_city(''.join(elem.css('.aditem-main--top--left::text').getall()))
+            item.price = self.parse_price(elem.css('.aditem-main--middle--price-shipping--price::text').get())
+            item.postal_code, item.city = self.parse_postal_code_and_city_from_div_tag(elem.css('.aditem-main--top--left').get())
+            # item.postal_code, item.city = self.parse_postal_code_and_city(''.join(elem.css('.aditem-main--top--left::text').getall()))
+
+
             item.online_since = self.parse_online_since(''.join(elem.css('.aditem-main--top--right::text').getall()))
             self.scalp_tags(item, elem.css('.simpletag::text').getall())
 

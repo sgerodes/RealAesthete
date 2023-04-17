@@ -12,6 +12,7 @@ scrapy-rotating-proxies = "*"
 fake-useragent = "*"
 scrapy-dot-items = "*"
 inflection = "*"
+parsel = "~=1.6.0"
 
 [dev-packages]
 pytest = "*"
