@@ -24,6 +24,7 @@ HTTPERROR_ALLOWED_CODES = [404]
 ITEM_PIPELINES = {
     get_full_package_name_for_class(pipelines.ImmoweltPersistencePipeline): 300
 }
+REQUEST_FINGERPRINTER_IMPLEMENTATION = '2.7'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'immowelt (+http://www.yourdomain.com)'

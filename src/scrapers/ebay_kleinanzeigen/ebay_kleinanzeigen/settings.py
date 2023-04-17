@@ -24,6 +24,7 @@ NEWSPIDER_MODULE = spiders.__name__  # 'src.scraper.ebay_kleinanzeigen.ebay_klei
 ITEM_PIPELINES = {
     get_full_package_name_for_class(pipelines.EbayKleinanzeigenPersistencePipeline): 300
 }
+REQUEST_FINGERPRINTER_IMPLEMENTATION = '2.7'
 
 # Rotating proxies
 #ROTATING_PROXY_LIST = proxies.proxies

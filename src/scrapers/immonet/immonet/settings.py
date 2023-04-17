@@ -15,6 +15,16 @@ NEWSPIDER_MODULE = spiders.__name__
 ITEM_PIPELINES = {
     get_full_package_name_for_class(pipelines.ImmonetPersistencePipeline): 300
 }
+REQUEST_FINGERPRINTER_IMPLEMENTATION = '2.7'
+
+## Playwright settings
+# DOWNLOAD_HANDLERS = {
+#     "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+#     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+# }
+# TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'immonet (+http://www.yourdomain.com)'
