@@ -145,3 +145,5 @@ cython_debug/
 *.db
 *playground.py
 *.db-journal
+
+_trial_temp

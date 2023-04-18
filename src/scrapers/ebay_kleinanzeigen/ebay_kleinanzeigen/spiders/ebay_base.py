@@ -88,21 +88,30 @@ class EbayKleinanzeigenSpider(BaseSpider):
         return postal_code, city
 
     @classmethod
+    def extract_and_parse_time(cls, text: str):
+        t_set = set(re.findall(r'\d{2}:\d{2}', text))
+        if len(t_set) > 1:
+            cls.get_class_logger().warning(f'Found more than one time in {text=}: {t_str}')
+        if len(t_set) == 0:
+            cls.get_class_logger().warning(f'Found no time in {text=}')
+            return None
+        return datetime.time.fromisoformat(t_set.pop())
+
+    @classmethod
     @catch_errors
     def parse_online_since(cls, text: str):
         # example ' Heute, 21:38'
+        # '\n                                    \n                                        Heute, 07:59\n                                    \n                                        Heute, 07:59'
         text = text.strip()
         if not text:
             return None
         if "Heute" in text:
             d = datetime.date.today()
-            t_str = text.split(",")[1].strip()
-            t = datetime.time.fromisoformat(t_str)
+            t = cls.extract_and_parse_time(text)
             return datetime.datetime.combine(d, t)
         elif "Gestern" in text:
             d = datetime.datetime.now() - datetime.timedelta(1)
-            t_str = text.split(",")[1].strip()
-            t = datetime.time.fromisoformat(t_str)
+            t = cls.extract_and_parse_time(text)
             return datetime.datetime.combine(d, t)
         else:
             # TODO change- wrong format. is '05-08-2022', datetime expects YYYY-MM-DDTHH:MM:SS. mmmmmm
