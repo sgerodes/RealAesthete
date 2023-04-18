@@ -17,7 +17,7 @@ from src.scrapers.utils import catch_errors
 
 class ImmonetSpider(BaseSpider):
     def start_requests(self):
-        yield scrapy.http.Request(self.start_urls[0], headers=self.get_headers())
+        yield scrapy.http.Request(self.start_urls[0], headers=self.get_headers(), meta={"playwright": True})
 
     @classmethod
     @catch_errors

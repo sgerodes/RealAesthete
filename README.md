@@ -11,6 +11,7 @@ docker run -e SQLALCHEMY_DATABASE_URI=<db_uri> -e ACTIVATE_SPIDERS=ALL real-aest
 E.g.:
 ```zsh
 docker run -e SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@raspberrypisdextremeplus:5432/postgres -e IMMOWELT_SPIDER_RANDOM_DECLINE_RATE=0.5 -e ACTIVATE_SPIDERS=EbayFlatRentSpider -e POSTGRES_POOL_SIZE=200 -e POSTGRES_MAX_OVERFLOW=20 -it real-aesthete
+docker run -e SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@192.168.178.133:5432/postgres -e IMMOWELT_SPIDER_RANDOM_DECLINE_RATE=0.5 -e ACTIVATE_SPIDERS=EbayFlatRentSpider -e POSTGRES_POOL_SIZE=200 -e POSTGRES_MAX_OVERFLOW=20 -it real-aesthete
 ```
 
 # Dokerize
